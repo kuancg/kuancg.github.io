@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>相册 | Kuan</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root{--primary:#00d9ff;--primary-soft:rgba(0,217,255,0.15);--secondary:#00ff87;--accent:#b400ff;--bg-dark:#0d0d14;--bg-card:rgba(255,255,255,0.04);--bg-card-hover:rgba(255,255,255,0.08);--border:rgba(255,255,255,0.1);--border-hover:rgba(0,217,255,0.4);--text-primary:#f0f0f5;--text-secondary:#8a8aa0;--text-muted:#5a5a70}
+    [data-theme="light"]{--primary:#0099cc;--primary-soft:rgba(0,153,204,0.12);--secondary:#00cc66;--accent:#9933cc;--bg-dark:#f8f9fc;--bg-card:rgba(255,255,255,0.9);--bg-card-hover:rgba(255,255,255,1);--border:rgba(0,0,0,0.1);--border-hover:rgba(0,153,204,0.4);--text-primary:#1a1a2e;--text-secondary:#5a5a70;--text-muted:#8a8a9e}
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{font-family:'Outfit',sans-serif;background:var(--bg-dark);color:var(--text-primary);min-height:100vh;line-height:1.6;transition:background 0.4s,color 0.4s}
+    .bg-gradient{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:0.4}
+    .bg-gradient::before{content:'';position:absolute;top:-50%;right:-30%;width:80%;height:80%;background:radial-gradient(circle,var(--accent) 0%,transparent 50%);animation:bgFloat 25s ease-in-out infinite}
+    .bg-gradient::after{content:'';position:absolute;bottom:-30%;left:-20%;width:60%;height:60%;background:radial-gradient(circle,var(--primary) 0%,transparent 50%);animation:bgFloat 20s ease-in-out infinite reverse}
+    [data-theme="light"] .bg-gradient{opacity:0.15}
+    @keyframes bgFloat{0%,100%{transform:translate(0,0)}50%{transform:translate(5%,5%)}}
+    .header{position:sticky;top:0;z-index:100;background:var(--bg-dark);border-bottom:1px solid var(--border);backdrop-filter:blur(20px);transition:background 0.4s}
+    [data-theme="light"] .header{background:rgba(248,249,252,0.9)}
+    .header-inner{max-width:1400px;margin:0 auto;padding:1rem 2rem;display:flex;align-items:center;justify-content:space-between}
+    .logo{display:flex;align-items:center;gap:0.75rem;text-decoration:none;color:var(--text-primary)}
+    .logo-icon{width:40px;height:40px;background:linear-gradient(135deg,var(--accent),var(--primary));border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.2rem}
+    .logo-text{font-weight:700;font-size:1.25rem}
+    .logo-text span{color:var(--primary)}
+    .header-actions{display:flex;align-items:center;gap:1rem}
+    .btn{padding:0.6rem 1.25rem;border-radius:10px;font-size:0.85rem;font-weight:500;cursor:pointer;transition:all 0.3s;text-decoration:none;display:inline-flex;align-items:center;gap:0.5rem;border:none;font-family:inherit}
+    .btn-ghost{background:transparent;color:var(--text-secondary);border:1px solid var(--border)}
+    .btn-ghost:hover{color:var(--text-primary);border-color:var(--border-hover);background:var(--bg-card)}
+    .theme-btn{width:40px;height:40px;border-radius:10px;background:var(--bg-card);border:1px solid var(--border);color:var(--text-muted);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.3s}
+    .theme-btn:hover{border-color:var(--border-hover);color:var(--text-primary)}
+    .main{position:relative;z-index:1;max-width:1400px;margin:0 auto;padding:3rem 2rem}
+    .page-header{text-align:center;margin-bottom:3rem}
+    .page-title{font-size:3rem;font-weight:700;margin-bottom:0.75rem;background:linear-gradient(135deg,var(--text-primary),var(--accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+    .page-subtitle{color:var(--text-secondary);font-size:1.1rem}
+    .gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1.5rem}
+    .photo-card{position:relative;background:var(--bg-card);border:1px solid var(--border);border-radius:16px;overflow:hidden;cursor:pointer;transition:all 0.4s cubic-bezier(0.4,0,0.2,1);aspect-ratio:1}
+    .photo-card:hover{transform:translateY(-8px);border-color:var(--border-hover);box-shadow:0 20px 50px rgba(0,0,0,0.3)}
+    [data-theme="light"] .photo-card:hover{box-shadow:0 20px 50px rgba(0,0,0,0.1)}
+    .photo-card img{width:100%;height:100%;object-fit:cover;transition:transform 0.5s}
+    .photo-card:hover img{transform:scale(1.05)}
+    .photo-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,0.8) 0%,transparent 50%);opacity:0;transition:opacity 0.3s;display:flex;flex-direction:column;justify-content:flex-end;padding:1.5rem}
+    .photo-card:hover .photo-overlay{opacity:1}
+    .photo-title{font-weight:600;font-size:1.1rem;color:#fff;margin-bottom:0.25rem}
+    .photo-date{font-size:0.8rem;color:rgba(255,255,255,0.7)}
+    .empty-state{text-align:center;padding:5rem 2rem}
+    .empty-icon{font-size:5rem;margin-bottom:1.5rem;opacity:0.4}
+    .empty-title{font-size:1.5rem;font-weight:600;margin-bottom:0.5rem;color:var(--text-secondary)}
+    .empty-text{color:var(--text-muted)}
+    .loading{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:4rem;gap:1rem}
+    .loading-spinner{width:50px;height:50px;border:4px solid var(--border);border-top-color:var(--primary);border-radius:50%;animation:spin 1s linear infinite}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    /* Lightbox */
+    .lightbox{position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,0.95);display:flex;align-items:center;justify-content:center;opacity:0;visibility:hidden;transition:all 0.3s}
+    .lightbox.active{opacity:1;visibility:visible}
+    .lightbox-content{max-width:90vw;max-height:90vh;position:relative}
+    .lightbox-content img{max-width:90vw;max-height:85vh;object-fit:contain;border-radius:12px;box-shadow:0 20px 60px rgba(0,0,0,0.5)}
+    .lightbox-close{position:absolute;top:-50px;right:0;width:44px;height:44px;border:none;background:rgba(255,255,255,0.1);border-radius:50%;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.3s;font-size:1.5rem}
+    .lightbox-close:hover{background:rgba(255,255,255,0.2)}
+    .lightbox-info{text-align:center;margin-top:1.5rem;color:#fff}
+    .lightbox-title{font-size:1.25rem;font-weight:600;margin-bottom:0.25rem}
+    .lightbox-date{font-size:0.9rem;color:rgba(255,255,255,0.6)}
+    .lightbox-nav{position:absolute;top:50%;transform:translateY(-50%);width:50px;height:50px;border:none;background:rgba(255,255,255,0.1);border-radius:50%;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.3s;font-size:1.5rem}
+    .lightbox-nav:hover{background:rgba(255,255,255,0.2)}
+    .lightbox-prev{left:-80px}
+    .lightbox-next{right:-80px}
+    .footer{text-align:center;padding:3rem 2rem;color:var(--text-muted);font-size:0.85rem;border-top:1px solid var(--border);margin-top:4rem}
+    .footer a{color:var(--primary);text-decoration:none}
+    @media(max-width:768px){.header-inner{padding:1rem}.main{padding:2rem 1rem}.page-title{font-size:2rem}.gallery{grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:1rem}.lightbox-nav{display:none}}
+  </style>
+</head>
+<body>
+  <div class="bg-gradient"></div>
+  <header class="header">
+    <div class="header-inner">
+      <a href="../" class="logo"><div class="logo-icon">📷</div><div class="logo-text">Kuan's <span>Gallery</span></div></a>
+      <div class="header-actions">
+        <a href="admin.html" class="btn btn-ghost">🔐 管理</a>
+        <button class="theme-btn" id="themeToggle"><span id="themeIcon">🌙</span></button>
+      </div>
+    </div>
+  </header>
+  <main class="main">
+    <div class="page-header">
+      <h1 class="page-title">我的相册</h1>
+      <p class="page-subtitle">记录生活的美好瞬间</p>
+    </div>
+    <div id="galleryContainer">
+      <div class="loading"><div class="loading-spinner"></div><div>加载中...</div></div>
+    </div>
+  </main>
+  <footer class="footer">
+    <p>© 2026 Kuan. Built with ❤️</p>
+    <p style="margin-top:0.5rem"><a href="../">返回主页</a></p>
+  </footer>
+  <div class="lightbox" id="lightbox">
+    <div class="lightbox-content">
+      <button class="lightbox-close" id="lightboxClose">×</button>
+      <button class="lightbox-nav lightbox-prev" id="lightboxPrev">‹</button>
+      <button class="lightbox-nav lightbox-next" id="lightboxNext">›</button>
+      <img id="lightboxImg" src="" alt="">
+      <div class="lightbox-info">
+        <div class="lightbox-title" id="lightboxTitle"></div>
+        <div class="lightbox-date" id="lightboxDate"></div>
+      </div>
+    </div>
+  </div>
+  <script>
+    // Theme
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    const themeIcon = document.getElementById('themeIcon');
+    function setTheme(t) {
+      if (t === 'light') { document.documentElement.setAttribute('data-theme', 'light'); themeIcon.textContent = '☀️'; }
+      else { document.documentElement.removeAttribute('data-theme'); themeIcon.textContent = '🌙'; }
+      localStorage.setItem('theme', t);
+    }
+    setTheme(savedTheme);
+    document.getElementById('themeToggle').onclick = () => setTheme(document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light');
+
+    let photos = [];
+    let currentIndex = 0;
+    const galleryContainer = document.getElementById('galleryContainer');
+    const lightbox = document.getElementById('lightbox');
+    const lightboxImg = document.getElementById('lightboxImg');
+    const lightboxTitle = document.getElementById('lightboxTitle');
+    const lightboxDate = document.getElementById('lightboxDate');
+
+    async function loadPhotos() {
+      try {
+        const res = await fetch('images/photos.json');
+        if (!res.ok) throw new Error('No data');
+        photos = await res.json();
+        renderGallery();
+      } catch (e) {
+        photos = [];
+        renderGallery();
+      }
+    }
+
+    function renderGallery() {
+      if (photos.length === 0) {
+        galleryContainer.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-icon">📷</div>
+            <h3 class="empty-title">暂无照片</h3>
+            <p class="empty-text">还没有上传任何照片</p>
+          </div>`;
+        return;
+      }
+      photos.sort((a, b) => new Date(b.date) - new Date(a.date));
+      galleryContainer.innerHTML = `<div class="gallery">${photos.map((p, i) => `
+        <div class="photo-card" data-index="${i}">
+          <img src="${p.url}" alt="${escapeHtml(p.title)}" loading="lazy">
+          <div class="photo-overlay">
+            <div class="photo-title">${escapeHtml(p.title)}</div>
+            <div class="photo-date">${p.date}</div>
+          </div>
+        </div>
+      `).join('')}</div>`;
+      
+      document.querySelectorAll('.photo-card').forEach(card => {
+        card.onclick = () => openLightbox(parseInt(card.dataset.index));
+      });
+    }
+
+    function escapeHtml(t) { const d = document.createElement('div'); d.textContent = t; return d.innerHTML; }
+
+    function openLightbox(index) {
+      currentIndex = index;
+      updateLightbox();
+      lightbox.classList.add('active');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function updateLightbox() {
+      const photo = photos[currentIndex];
+      lightboxImg.src = photo.url;
+      lightboxTitle.textContent = photo.title;
+      lightboxDate.textContent = photo.date;
+    }
+
+    function closeLightbox() {
+      lightbox.classList.remove('active');
+      document.body.style.overflow = '';
+    }
+
+    document.getElementById('lightboxClose').onclick = closeLightbox;
+    lightbox.onclick = e => { if (e.target === lightbox) closeLightbox(); };
+    document.getElementById('lightboxPrev').onclick = () => { currentIndex = (currentIndex - 1 + photos.length) % photos.length; updateLightbox(); };
+    document.getElementById('lightboxNext').onclick = () => { currentIndex = (currentIndex + 1) % photos.length; updateLightbox(); };
+    document.onkeydown = e => {
+      if (!lightbox.classList.contains('active')) return;
+      if (e.key === 'Escape') closeLightbox();
+      if (e.key === 'ArrowLeft') document.getElementById('lightboxPrev').click();
+      if (e.key === 'ArrowRight') document.getElementById('lightboxNext').click();
+    };
+
+    loadPhotos();
+  </script>
+</body>
+</html>

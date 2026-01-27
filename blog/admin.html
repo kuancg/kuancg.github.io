@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>博客管理 | Kuan</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&family=Noto+Serif+SC:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <style>
+    :root{--primary:#00d9ff;--primary-soft:rgba(0,217,255,0.15);--secondary:#00ff87;--accent:#b400ff;--bg-dark:#0d0d14;--bg-card:rgba(255,255,255,0.04);--bg-card-hover:rgba(255,255,255,0.08);--border:rgba(255,255,255,0.1);--border-hover:rgba(0,217,255,0.4);--text-primary:#f0f0f5;--text-secondary:#8a8aa0;--text-muted:#5a5a70;--danger:#ff4757;--danger-soft:rgba(255,71,87,0.15);--success:#00ff87;--success-soft:rgba(0,255,135,0.15)}
+    [data-theme="light"]{--primary:#0099cc;--primary-soft:rgba(0,153,204,0.12);--secondary:#00cc66;--accent:#9933cc;--bg-dark:#f8f9fc;--bg-card:rgba(255,255,255,0.9);--bg-card-hover:rgba(255,255,255,1);--border:rgba(0,0,0,0.1);--border-hover:rgba(0,153,204,0.4);--text-primary:#1a1a2e;--text-secondary:#5a5a70;--text-muted:#8a8aa0}
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{font-family:'Outfit',sans-serif;background:var(--bg-dark);color:var(--text-primary);min-height:100vh;line-height:1.6;transition:background 0.4s,color 0.4s}
+    .bg-gradient{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:0.3}
+    .bg-gradient::before{content:'';position:absolute;top:-30%;left:-30%;width:60%;height:60%;background:radial-gradient(circle,var(--primary) 0%,transparent 50%)}
+    [data-theme="light"] .bg-gradient{opacity:0.1}
+    .header{position:sticky;top:0;z-index:100;background:var(--bg-dark);border-bottom:1px solid var(--border);backdrop-filter:blur(20px)}
+    [data-theme="light"] .header{background:rgba(248,249,252,0.95)}
+    .header-inner{max-width:1400px;margin:0 auto;padding:1rem 2rem;display:flex;align-items:center;justify-content:space-between}
+    .logo{display:flex;align-items:center;gap:0.75rem;text-decoration:none;color:var(--text-primary)}
+    .logo-icon{width:40px;height:40px;background:linear-gradient(135deg,var(--primary),var(--secondary));border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.2rem}
+    .logo-text{font-weight:700;font-size:1.25rem}
+    .logo-text span{color:var(--primary)}
+    .header-actions{display:flex;align-items:center;gap:1rem}
+    .btn{padding:0.6rem 1.25rem;border-radius:10px;font-size:0.85rem;font-weight:500;cursor:pointer;transition:all 0.3s;text-decoration:none;display:inline-flex;align-items:center;gap:0.5rem;border:none;font-family:inherit}
+    .btn-ghost{background:transparent;color:var(--text-secondary);border:1px solid var(--border)}
+    .btn-ghost:hover{color:var(--text-primary);border-color:var(--border-hover);background:var(--bg-card)}
+    .btn-primary{background:linear-gradient(135deg,var(--primary),var(--secondary));color:#000;font-weight:600}
+    .btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 25px rgba(0,217,255,0.3)}
+    .btn-danger{background:var(--danger-soft);color:var(--danger);border:1px solid var(--danger)}
+    .btn-danger:hover{background:var(--danger);color:#fff}
+    .btn-success{background:var(--success-soft);color:var(--success);border:1px solid var(--success)}
+    .btn-success:hover{background:var(--success);color:#000}
+    .btn-sm{padding:0.4rem 0.85rem;font-size:0.8rem}
+    .theme-btn{width:40px;height:40px;border-radius:10px;background:var(--bg-card);border:1px solid var(--border);color:var(--text-muted);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.3s}
+    .theme-btn:hover{border-color:var(--border-hover);color:var(--text-primary)}
+    .main{position:relative;z-index:1;max-width:1400px;margin:0 auto;padding:2rem}
+    .auth-section{background:var(--bg-card);border:1px solid var(--border);border-radius:16px;padding:2rem;margin-bottom:2rem}
+    .auth-title{font-size:1.1rem;font-weight:600;margin-bottom:1rem;display:flex;align-items:center;gap:0.5rem}
+    .auth-form{display:flex;gap:1rem;flex-wrap:wrap;align-items:flex-end}
+    .form-group{flex:1;min-width:200px}
+    .form-label{display:block;font-size:0.8rem;color:var(--text-secondary);margin-bottom:0.5rem}
+    .form-input{width:100%;padding:0.75rem 1rem;background:var(--bg-card-hover);border:1px solid var(--border);border-radius:10px;color:var(--text-primary);font-size:0.9rem;font-family:inherit;transition:all 0.3s}
+    .form-input:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-soft)}
+    .auth-status{display:flex;align-items:center;gap:0.5rem;padding:0.5rem 1rem;border-radius:8px;font-size:0.85rem}
+    .auth-status.connected{background:var(--success-soft);color:var(--success)}
+    .auth-status.disconnected{background:var(--danger-soft);color:var(--danger)}
+    .panel-layout{display:grid;grid-template-columns:350px 1fr;gap:2rem}
+    @media(max-width:1024px){.panel-layout{grid-template-columns:1fr}}
+    .panel{background:var(--bg-card);border:1px solid var(--border);border-radius:16px;overflow:hidden}
+    .panel-header{padding:1.25rem 1.5rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+    .panel-title{font-size:1rem;font-weight:600}
+    .panel-body{max-height:calc(100vh - 350px);overflow-y:auto}
+    .blog-list-item{padding:1.25rem 1.5rem;border-bottom:1px solid var(--border);cursor:pointer;transition:all 0.3s}
+    .blog-list-item:hover{background:var(--bg-card-hover)}
+    .blog-list-item.active{background:var(--primary-soft);border-left:3px solid var(--primary)}
+    .blog-list-title{font-weight:500;margin-bottom:0.35rem;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden}
+    .blog-list-meta{font-size:0.75rem;color:var(--text-muted)}
+    .empty-list{padding:3rem;text-align:center;color:var(--text-muted)}
+    .empty-list-icon{font-size:2.5rem;margin-bottom:1rem;opacity:0.5}
+    .editor-panel{display:flex;flex-direction:column}
+    .editor-header{padding:1.25rem 1.5rem;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:1rem;flex-wrap:wrap}
+    .editor-title-input{flex:1;min-width:200px;padding:0.75rem 1rem;background:var(--bg-card-hover);border:1px solid var(--border);border-radius:10px;color:var(--text-primary);font-size:1.1rem;font-weight:600;font-family:inherit}
+    .editor-title-input:focus{outline:none;border-color:var(--primary)}
+    .editor-meta{padding:1rem 1.5rem;border-bottom:1px solid var(--border);display:flex;gap:1rem;flex-wrap:wrap;align-items:center}
+    .editor-meta .form-group{flex:none;min-width:auto}
+    .editor-meta .form-input{padding:0.5rem 0.75rem;font-size:0.85rem}
+    .tags-input{min-width:250px}
+    .editor-body{flex:1;display:grid;grid-template-columns:1fr 1fr;min-height:400px}
+    @media(max-width:900px){.editor-body{grid-template-columns:1fr}}
+    .editor-pane{display:flex;flex-direction:column;border-right:1px solid var(--border)}
+    .editor-pane:last-child{border-right:none}
+    .pane-header{padding:0.75rem 1rem;background:var(--bg-card-hover);border-bottom:1px solid var(--border);font-size:0.8rem;font-weight:500;color:var(--text-secondary)}
+    .pane-body{flex:1;overflow:auto}
+    .markdown-editor{width:100%;height:100%;min-height:350px;padding:1.5rem;background:transparent;border:none;color:var(--text-primary);font-family:'Fira Code',monospace;font-size:0.9rem;line-height:1.8;resize:none}
+    .markdown-editor:focus{outline:none}
+    .preview-content{padding:1.5rem;font-family:'Noto Serif SC','Outfit',serif;font-size:0.95rem;line-height:1.8}
+    .preview-content h1,.preview-content h2,.preview-content h3{margin:1.5rem 0 0.75rem;font-family:'Outfit',sans-serif}
+    .preview-content p{margin-bottom:1rem;color:var(--text-secondary)}
+    .preview-content code{font-family:'Fira Code',monospace;background:var(--bg-card-hover);padding:0.15rem 0.4rem;border-radius:4px;font-size:0.85em}
+    .preview-content pre{background:var(--bg-card-hover);border-radius:10px;padding:1rem;overflow-x:auto;margin:1rem 0}
+    .preview-content pre code{background:none;padding:0}
+    .preview-content blockquote{border-left:3px solid var(--primary);padding-left:1rem;margin:1rem 0;color:var(--text-muted);font-style:italic}
+    .preview-content ul,.preview-content ol{margin:1rem 0;padding-left:1.5rem}
+    .preview-content li{margin:0.35rem 0;color:var(--text-secondary)}
+    .preview-content a{color:var(--primary)}
+    .editor-actions{padding:1rem 1.5rem;border-top:1px solid var(--border);display:flex;gap:1rem;justify-content:flex-end;flex-wrap:wrap}
+    .toast-container{position:fixed;top:80px;right:20px;z-index:1001;display:flex;flex-direction:column;gap:0.5rem}
+    .toast{padding:1rem 1.5rem;border-radius:12px;background:var(--bg-card);border:1px solid var(--border);box-shadow:0 10px 40px rgba(0,0,0,0.3);display:flex;align-items:center;gap:0.75rem;animation:slideIn 0.3s ease}
+    @keyframes slideIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
+    .toast.success{border-color:var(--success);background:var(--success-soft)}
+    .toast.error{border-color:var(--danger);background:var(--danger-soft)}
+    .dialog-overlay{position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,0.8);backdrop-filter:blur(5px);display:flex;align-items:center;justify-content:center;opacity:0;visibility:hidden;transition:all 0.3s}
+    .dialog-overlay.active{opacity:1;visibility:visible}
+    .dialog{background:var(--bg-card);border:1px solid var(--border);border-radius:20px;padding:2rem;max-width:400px;width:90%;text-align:center}
+    .dialog-icon{font-size:3rem;margin-bottom:1rem}
+    .dialog-title{font-size:1.25rem;font-weight:600;margin-bottom:0.5rem}
+    .dialog-text{color:var(--text-secondary);margin-bottom:1.5rem}
+    .dialog-actions{display:flex;gap:1rem;justify-content:center}
+    .instructions{background:var(--primary-soft);border:1px solid var(--border-hover);border-radius:12px;padding:1.5rem;margin-bottom:2rem}
+    .instructions-title{font-weight:600;margin-bottom:0.75rem}
+    .instructions-text{font-size:0.9rem;color:var(--text-secondary);line-height:1.7}
+    .instructions-text a{color:var(--primary)}
+    .instructions-text code{background:var(--bg-card);padding:0.15rem 0.4rem;border-radius:4px;font-family:'Fira Code',monospace;font-size:0.85em}
+    @media(max-width:768px){.header-inner{padding:1rem}.main{padding:1rem}.auth-form{flex-direction:column}.form-group{min-width:100%}}
+  </style>
+</head>
+<body>
+  <div class="bg-gradient"></div>
+  <header class="header">
+    <div class="header-inner">
+      <a href="./" class="logo"><div class="logo-icon">⚙️</div><div class="logo-text">博客<span>管理</span></div></a>
+      <div class="header-actions">
+        <a href="./" class="btn btn-ghost">← 返回博客</a>
+        <button class="theme-btn" id="themeToggle"><span id="themeIcon">🌙</span></button>
+      </div>
+    </div>
+  </header>
+  <main class="main">
+    <div class="instructions">
+      <div class="instructions-title">📋 使用说明</div>
+      <div class="instructions-text">
+        <p>1. 在 GitHub 创建 <a href="https://github.com/settings/tokens" target="_blank">Personal Access Token</a>，需要 <code>repo</code> 权限</p>
+        <p>2. 填写 GitHub 用户名、仓库名和 Token，点击连接</p>
+        <p>3. 连接成功后即可管理博客，数据自动同步到 GitHub</p>
+      </div>
+    </div>
+    <div class="auth-section">
+      <div class="auth-title">🔐 GitHub 连接配置</div>
+      <div class="auth-form">
+        <div class="form-group"><label class="form-label">用户名</label><input type="text" class="form-input" id="githubUser" placeholder="your-username"></div>
+        <div class="form-group"><label class="form-label">仓库名</label><input type="text" class="form-input" id="githubRepo" placeholder="your-repo"></div>
+        <div class="form-group"><label class="form-label">Token</label><input type="password" class="form-input" id="githubToken" placeholder="ghp_xxxx"></div>
+        <button class="btn btn-primary" id="connectBtn">连接</button>
+        <div class="auth-status disconnected" id="authStatus"><span>●</span> 未连接</div>
+      </div>
+    </div>
+    <div class="panel-layout">
+      <div class="panel">
+        <div class="panel-header"><h2 class="panel-title">文章列表</h2><button class="btn btn-primary btn-sm" id="newPostBtn">+ 新建</button></div>
+        <div class="panel-body" id="blogList"><div class="empty-list"><div class="empty-list-icon">📝</div><p>暂无文章</p></div></div>
+      </div>
+      <div class="panel editor-panel">
+        <div class="editor-header">
+          <input type="text" class="editor-title-input" id="editorTitle" placeholder="输入文章标题...">
+          <button class="btn btn-danger btn-sm" id="deleteBtn" style="display:none">🗑️ 删除</button>
+        </div>
+        <div class="editor-meta">
+          <div class="form-group"><label class="form-label">日期</label><input type="date" class="form-input" id="editorDate"></div>
+          <div class="form-group"><label class="form-label">标签（逗号分隔）</label><input type="text" class="form-input tags-input" id="editorTags" placeholder="技术, 生活"></div>
+        </div>
+        <div class="editor-body">
+          <div class="editor-pane"><div class="pane-header">Markdown 编辑</div><div class="pane-body"><textarea class="markdown-editor" id="editorContent" placeholder="在这里写文章内容...&#10;&#10;支持 Markdown 语法"></textarea></div></div>
+          <div class="editor-pane"><div class="pane-header">预览</div><div class="pane-body"><div class="preview-content" id="previewContent"></div></div></div>
+        </div>
+        <div class="editor-actions">
+          <button class="btn btn-ghost" id="cancelBtn">取消</button>
+          <button class="btn btn-success" id="saveBtn">💾 保存</button>
+        </div>
+      </div>
+    </div>
+  </main>
+  <div class="toast-container" id="toastContainer"></div>
+  <div class="dialog-overlay" id="dialogOverlay">
+    <div class="dialog">
+      <div class="dialog-icon">⚠️</div>
+      <h3 class="dialog-title">确认删除</h3>
+      <p class="dialog-text">确定要删除这篇文章吗？</p>
+      <div class="dialog-actions">
+        <button class="btn btn-ghost" id="dialogCancel">取消</button>
+        <button class="btn btn-danger" id="dialogConfirm">确认删除</button>
+      </div>
+    </div>
+  </div>
+  <script>
+    // Theme
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    function setTheme(t) {
+      if (t === 'light') { document.documentElement.setAttribute('data-theme', 'light'); themeIcon.textContent = '☀️'; }
+      else { document.documentElement.removeAttribute('data-theme'); themeIcon.textContent = '🌙'; }
+      localStorage.setItem('theme', t);
+    }
+    setTheme(savedTheme);
+    document.getElementById('themeToggle').onclick = () => setTheme(document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light');
+
+    // Elements
+    const $ = id => document.getElementById(id);
+    const githubUser = $('githubUser'), githubRepo = $('githubRepo'), githubToken = $('githubToken');
+    const connectBtn = $('connectBtn'), authStatus = $('authStatus'), blogList = $('blogList');
+    const newPostBtn = $('newPostBtn'), deleteBtn = $('deleteBtn');
+    const editorTitle = $('editorTitle'), editorDate = $('editorDate'), editorTags = $('editorTags');
+    const editorContent = $('editorContent'), previewContent = $('previewContent');
+    const saveBtn = $('saveBtn'), cancelBtn = $('cancelBtn');
+    const dialogOverlay = $('dialogOverlay'), dialogCancel = $('dialogCancel'), dialogConfirm = $('dialogConfirm');
+    const toastContainer = $('toastContainer');
+
+    let config = { user: '', repo: '', token: '', connected: false };
+    let blogs = [], currentId = null, fileSha = null;
+
+    // Load saved config
+    githubUser.value = localStorage.getItem('gh_user') || '';
+    githubRepo.value = localStorage.getItem('gh_repo') || '';
+    githubToken.value = localStorage.getItem('gh_token') || '';
+
+    // Toast
+    function toast(msg, type = 'success') {
+      const t = document.createElement('div');
+      t.className = `toast ${type}`;
+      t.innerHTML = `<span class="toast-icon">${type === 'success' ? '✅' : '❌'}</span><span>${msg}</span>`;
+      toastContainer.appendChild(t);
+      setTimeout(() => t.remove(), 3000);
+    }
+
+    // GitHub API
+    const api = {
+      async get(path) {
+        const res = await fetch(`https://api.github.com/repos/${config.user}/${config.repo}/contents/${path}`, {
+          headers: { Authorization: `token ${config.token}`, Accept: 'application/vnd.github.v3+json' }
+        });
+        if (!res.ok) throw new Error('Failed');
+        return res.json();
+      },
+      async put(path, content, sha = null) {
+        const body = { message: `Update ${path}`, content: btoa(unescape(encodeURIComponent(content))) };
+        if (sha) body.sha = sha;
+        const res = await fetch(`https://api.github.com/repos/${config.user}/${config.repo}/contents/${path}`, {
+          method: 'PUT',
+          headers: { Authorization: `token ${config.token}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        });
+        if (!res.ok) throw new Error('Failed');
+        return res.json();
+      }
+    };
+
+    // Connect
+    connectBtn.onclick = async () => {
+      config.user = githubUser.value.trim();
+      config.repo = githubRepo.value.trim();
+      config.token = githubToken.value.trim();
+      if (!config.user || !config.repo || !config.token) { toast('请填写完整信息', 'error'); return; }
+      try {
+        connectBtn.textContent = '连接中...';
+        const res = await fetch(`https://api.github.com/repos/${config.user}/${config.repo}`, {
+          headers: { Authorization: `token ${config.token}` }
+        });
+        if (!res.ok) throw new Error('Invalid');
+        config.connected = true;
+        authStatus.className = 'auth-status connected';
+        authStatus.innerHTML = '<span>●</span> 已连接';
+        localStorage.setItem('gh_user', config.user);
+        localStorage.setItem('gh_repo', config.repo);
+        localStorage.setItem('gh_token', config.token);
+        toast('连接成功！');
+        loadBlogs();
+      } catch (e) {
+        toast('连接失败，请检查配置', 'error');
+        authStatus.className = 'auth-status disconnected';
+        authStatus.innerHTML = '<span>●</span> 连接失败';
+      }
+      connectBtn.textContent = '连接';
+    };
+
+    // Load blogs
+    async function loadBlogs() {
+      if (!config.connected) return;
+      try {
+        const data = await api.get('blog/data/blogs.json');
+        fileSha = data.sha;
+        blogs = JSON.parse(decodeURIComponent(escape(atob(data.content))));
+        renderList();
+      } catch (e) {
+        blogs = []; fileSha = null;
+        renderList();
+      }
+    }
+
+    function renderList() {
+      if (blogs.length === 0) {
+        blogList.innerHTML = '<div class="empty-list"><div class="empty-list-icon">📝</div><p>暂无文章</p></div>';
+        return;
+      }
+      blogs.sort((a, b) => new Date(b.date) - new Date(a.date));
+      blogList.innerHTML = blogs.map(b => `
+        <div class="blog-list-item ${currentId === b.id ? 'active' : ''}" data-id="${b.id}">
+          <div class="blog-list-title">${escapeHtml(b.title)}</div>
+          <div class="blog-list-meta">${b.date}</div>
+        </div>
+      `).join('');
+      blogList.querySelectorAll('.blog-list-item').forEach(el => {
+        el.onclick = () => editBlog(el.dataset.id);
+      });
+    }
+
+    function escapeHtml(t) { const d = document.createElement('div'); d.textContent = t; return d.innerHTML; }
+
+    // Editor
+    editorContent.oninput = () => { previewContent.innerHTML = marked.parse(editorContent.value); };
+    
+    newPostBtn.onclick = () => {
+      if (!config.connected) { toast('请先连接 GitHub', 'error'); return; }
+      currentId = null;
+      editorTitle.value = '';
+      editorDate.value = new Date().toISOString().split('T')[0];
+      editorTags.value = '';
+      editorContent.value = '';
+      previewContent.innerHTML = '';
+      deleteBtn.style.display = 'none';
+      renderList();
+    };
+
+    function editBlog(id) {
+      const blog = blogs.find(b => b.id === id);
+      if (!blog) return;
+      currentId = id;
+      editorTitle.value = blog.title;
+      editorDate.value = blog.date;
+      editorTags.value = (blog.tags || []).join(', ');
+      editorContent.value = blog.content;
+      previewContent.innerHTML = marked.parse(blog.content);
+      deleteBtn.style.display = 'inline-flex';
+      renderList();
+    }
+
+    cancelBtn.onclick = () => {
+      currentId = null;
+      editorTitle.value = '';
+      editorDate.value = '';
+      editorTags.value = '';
+      editorContent.value = '';
+      previewContent.innerHTML = '';
+      deleteBtn.style.display = 'none';
+      renderList();
+    };
+
+    // Save
+    saveBtn.onclick = async () => {
+      if (!config.connected) { toast('请先连接 GitHub', 'error'); return; }
+      const title = editorTitle.value.trim();
+      const content = editorContent.value.trim();
+      if (!title || !content) { toast('标题和内容不能为空', 'error'); return; }
+      
+      const blog = {
+        id: currentId || Date.now().toString(),
+        title,
+        date: editorDate.value || new Date().toISOString().split('T')[0],
+        tags: editorTags.value.split(',').map(t => t.trim()).filter(t => t),
+        content
+      };
+
+      if (currentId) {
+        const idx = blogs.findIndex(b => b.id === currentId);
+        if (idx !== -1) blogs[idx] = blog;
+      } else {
+        blogs.unshift(blog);
+      }
+
+      try {
+        saveBtn.textContent = '保存中...';
+        const result = await api.put('blog/data/blogs.json', JSON.stringify(blogs, null, 2), fileSha);
+        fileSha = result.content.sha;
+        currentId = blog.id;
+        toast('保存成功！');
+        renderList();
+        deleteBtn.style.display = 'inline-flex';
+      } catch (e) {
+        toast('保存失败', 'error');
+      }
+      saveBtn.textContent = '💾 保存';
+    };
+
+    // Delete
+    deleteBtn.onclick = () => { dialogOverlay.classList.add('active'); };
+    dialogCancel.onclick = () => { dialogOverlay.classList.remove('active'); };
+    dialogConfirm.onclick = async () => {
+      dialogOverlay.classList.remove('active');
+      if (!currentId) return;
+      blogs = blogs.filter(b => b.id !== currentId);
+      try {
+        const result = await api.put('blog/data/blogs.json', JSON.stringify(blogs, null, 2), fileSha);
+        fileSha = result.content.sha;
+        toast('删除成功！');
+        cancelBtn.click();
+      } catch (e) {
+        toast('删除失败', 'error');
+      }
+    };
+
+    // Auto connect if saved
+    if (githubUser.value && githubRepo.value && githubToken.value) {
+      connectBtn.click();
+    }
+  </script>
+</body>
+</html>

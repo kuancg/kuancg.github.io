@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Markdown 编辑器 | Kuan</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&family=Noto+Serif+SC:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <style>
+    :root{--primary:#00d9ff;--primary-soft:rgba(0,217,255,0.15);--secondary:#00ff87;--accent:#b400ff;--bg-dark:#0d0d14;--bg-card:rgba(255,255,255,0.04);--bg-card-hover:rgba(255,255,255,0.08);--border:rgba(255,255,255,0.1);--border-hover:rgba(0,217,255,0.4);--text-primary:#f0f0f5;--text-secondary:#8a8aa0;--text-muted:#5a5a70}
+    [data-theme="light"]{--primary:#0099cc;--primary-soft:rgba(0,153,204,0.12);--secondary:#00cc66;--accent:#9933cc;--bg-dark:#f8f9fc;--bg-card:rgba(255,255,255,0.9);--bg-card-hover:rgba(255,255,255,1);--border:rgba(0,0,0,0.1);--border-hover:rgba(0,153,204,0.4);--text-primary:#1a1a2e;--text-secondary:#5a5a70;--text-muted:#8a8a9e}
+    *{margin:0;padding:0;box-sizing:border-box}
+    html,body{height:100%}
+    body{font-family:'Outfit',sans-serif;background:var(--bg-dark);color:var(--text-primary);line-height:1.6;display:flex;flex-direction:column}
+    .bg-gradient{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:0.3}
+    .bg-gradient::before{content:'';position:absolute;top:-30%;left:50%;width:60%;height:60%;background:radial-gradient(circle,var(--secondary) 0%,transparent 50%)}
+    [data-theme="light"] .bg-gradient{opacity:0.15}
+    .header{position:sticky;top:0;z-index:100;background:var(--bg-dark);border-bottom:1px solid var(--border);backdrop-filter:blur(20px);flex-shrink:0}
+    [data-theme="light"] .header{background:rgba(248,249,252,0.95)}
+    .header-inner{max-width:1600px;margin:0 auto;padding:0.75rem 2rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap}
+    .logo{display:flex;align-items:center;gap:0.75rem;text-decoration:none;color:var(--text-primary)}
+    .logo-icon{width:36px;height:36px;background:linear-gradient(135deg,var(--secondary),var(--primary));border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1rem}
+    .logo-text{font-weight:700;font-size:1.1rem}
+    .logo-text span{color:var(--primary)}
+    .header-actions{display:flex;align-items:center;gap:0.75rem;flex-wrap:wrap}
+    .btn{padding:0.5rem 1rem;border-radius:8px;font-size:0.8rem;font-weight:500;cursor:pointer;transition:all 0.3s;text-decoration:none;display:inline-flex;align-items:center;gap:0.4rem;border:none;font-family:inherit}
+    .btn-ghost{background:transparent;color:var(--text-secondary);border:1px solid var(--border)}
+    .btn-ghost:hover{color:var(--text-primary);border-color:var(--border-hover);background:var(--bg-card)}
+    .btn-primary{background:linear-gradient(135deg,var(--primary),var(--secondary));color:#000;font-weight:600}
+    .btn-primary:hover{transform:translateY(-1px);box-shadow:0 5px 20px rgba(0,217,255,0.3)}
+    .theme-btn{width:36px;height:36px;border-radius:8px;background:var(--bg-card);border:1px solid var(--border);color:var(--text-muted);cursor:pointer;display:flex;align-items:center;justify-content:center}
+    .theme-btn:hover{border-color:var(--border-hover);color:var(--text-primary)}
+    .main{position:relative;z-index:1;flex:1;display:flex;flex-direction:column;max-width:1600px;width:100%;margin:0 auto;padding:1rem 2rem 2rem}
+    .toolbar{display:flex;align-items:center;gap:0.5rem;padding:0.75rem 1rem;background:var(--bg-card);border:1px solid var(--border);border-radius:12px 12px 0 0;border-bottom:none;flex-wrap:wrap}
+    .toolbar-btn{width:32px;height:32px;border:none;background:var(--bg-card-hover);border-radius:6px;color:var(--text-secondary);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:0.85rem}
+    .toolbar-btn:hover{background:var(--primary-soft);color:var(--primary)}
+    .toolbar-divider{width:1px;height:24px;background:var(--border);margin:0 0.25rem}
+    .toolbar-spacer{flex:1}
+    .file-input{padding:0.4rem 0.75rem;background:var(--bg-card-hover);border:1px solid var(--border);border-radius:6px;color:var(--text-primary);font-size:0.8rem;font-family:inherit;width:180px}
+    .file-input:focus{outline:none;border-color:var(--primary)}
+    .editor-container{flex:1;display:grid;grid-template-columns:1fr 1fr;border:1px solid var(--border);border-radius:0 0 12px 12px;overflow:hidden;min-height:400px}
+    @media(max-width:900px){.editor-container{grid-template-columns:1fr}.pane-toggle{display:flex!important}}
+    .editor-pane,.preview-pane{display:flex;flex-direction:column;min-height:0}
+    .editor-pane{border-right:1px solid var(--border)}
+    .pane-header{padding:0.6rem 1rem;background:var(--bg-card-hover);border-bottom:1px solid var(--border);font-size:0.75rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;display:flex;align-items:center;justify-content:space-between}
+    .pane-toggle{display:none;gap:0.25rem}
+    .pane-toggle button{padding:0.25rem 0.5rem;border:1px solid var(--border);background:var(--bg-card);border-radius:4px;color:var(--text-muted);font-size:0.7rem;cursor:pointer}
+    .pane-toggle button.active{background:var(--primary-soft);border-color:var(--primary);color:var(--primary)}
+    .pane-body{flex:1;overflow:auto;min-height:0}
+    .markdown-editor{width:100%;height:100%;padding:1.25rem;background:transparent;border:none;color:var(--text-primary);font-family:'Fira Code',monospace;font-size:0.9rem;line-height:1.8;resize:none}
+    .markdown-editor:focus{outline:none}
+    .preview-content{padding:1.5rem;font-family:'Noto Serif SC','Outfit',serif;font-size:1rem;line-height:1.9;height:100%;overflow-y:auto}
+    .preview-content h1{font-size:2rem;margin:0 0 1rem;font-family:'Outfit',sans-serif;font-weight:700;border-bottom:2px solid var(--border);padding-bottom:0.5rem}
+    .preview-content h2{font-size:1.5rem;margin:2rem 0 1rem;font-family:'Outfit',sans-serif;font-weight:600}
+    .preview-content h3{font-size:1.25rem;margin:1.5rem 0 0.75rem;font-family:'Outfit',sans-serif;font-weight:600}
+    .preview-content p{margin-bottom:1rem;color:var(--text-secondary)}
+    .preview-content a{color:var(--primary)}
+    .preview-content code{font-family:'Fira Code',monospace;background:var(--bg-card-hover);padding:0.2rem 0.5rem;border-radius:4px;font-size:0.85em;color:var(--primary)}
+    .preview-content pre{background:var(--bg-card-hover);border-radius:10px;padding:1.25rem;overflow-x:auto;margin:1.5rem 0;border:1px solid var(--border)}
+    .preview-content pre code{background:none;padding:0;color:var(--text-primary)}
+    .preview-content blockquote{border-left:4px solid var(--primary);padding:0.5rem 0 0.5rem 1.5rem;margin:1.5rem 0;background:var(--primary-soft);border-radius:0 8px 8px 0}
+    .preview-content blockquote p{margin:0;font-style:italic}
+    .preview-content ul,.preview-content ol{margin:1rem 0;padding-left:2rem}
+    .preview-content li{margin:0.5rem 0;color:var(--text-secondary)}
+    .preview-content table{width:100%;border-collapse:collapse;margin:1.5rem 0}
+    .preview-content th,.preview-content td{border:1px solid var(--border);padding:0.75rem;text-align:left}
+    .preview-content th{background:var(--bg-card-hover);font-weight:600}
+    .preview-content img{max-width:100%;border-radius:8px;margin:1rem 0}
+    .preview-content hr{border:none;border-top:2px solid var(--border);margin:2rem 0}
+    .toast{position:fixed;bottom:20px;right:20px;padding:1rem 1.5rem;background:var(--bg-card);border:1px solid var(--success, var(--primary));border-radius:12px;color:var(--text-primary);z-index:1000;animation:slideUp 0.3s ease}
+    @keyframes slideUp{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
+    .footer{text-align:center;padding:1rem;color:var(--text-muted);font-size:0.8rem;border-top:1px solid var(--border)}
+    .footer a{color:var(--primary);text-decoration:none}
+    @media(max-width:768px){.header-inner{padding:0.75rem 1rem}.main{padding:1rem}.toolbar{padding:0.5rem}.file-input{width:120px}}
+  </style>
+</head>
+<body>
+  <div class="bg-gradient"></div>
+  <header class="header">
+    <div class="header-inner">
+      <a href="../" class="logo"><div class="logo-icon">📝</div><div class="logo-text">Markdown <span>Editor</span></div></a>
+      <div class="header-actions">
+        <input type="text" class="file-input" id="fileName" value="document" placeholder="文件名">
+        <span style="color:var(--text-muted);font-size:0.8rem">.md</span>
+        <button class="btn btn-ghost" id="clearBtn">🗑️ 清空</button>
+        <button class="btn btn-primary" id="downloadMd">⬇️ 下载 MD</button>
+        <button class="btn btn-primary" id="downloadHtml">⬇️ 下载 HTML</button>
+        <button class="theme-btn" id="themeToggle"><span id="themeIcon">🌙</span></button>
+      </div>
+    </div>
+  </header>
+  <main class="main">
+    <div class="toolbar">
+      <button class="toolbar-btn" onclick="insert('**', '**')" title="粗体">𝐁</button>
+      <button class="toolbar-btn" onclick="insert('*', '*')" title="斜体">𝐼</button>
+      <button class="toolbar-btn" onclick="insert('~~', '~~')" title="删除线">S̶</button>
+      <div class="toolbar-divider"></div>
+      <button class="toolbar-btn" onclick="insert('# ', '')" title="标题1">H1</button>
+      <button class="toolbar-btn" onclick="insert('## ', '')" title="标题2">H2</button>
+      <button class="toolbar-btn" onclick="insert('### ', '')" title="标题3">H3</button>
+      <div class="toolbar-divider"></div>
+      <button class="toolbar-btn" onclick="insert('- ', '')" title="无序列表">•</button>
+      <button class="toolbar-btn" onclick="insert('1. ', '')" title="有序列表">1.</button>
+      <button class="toolbar-btn" onclick="insert('> ', '')" title="引用">❝</button>
+      <div class="toolbar-divider"></div>
+      <button class="toolbar-btn" onclick="insert('[', '](url)')" title="链接">🔗</button>
+      <button class="toolbar-btn" onclick="insert('![alt](', ')')" title="图片">🖼️</button>
+      <button class="toolbar-btn" onclick="insert('`', '`')" title="行内代码">&lt;/&gt;</button>
+      <button class="toolbar-btn" onclick="insertCodeBlock()" title="代码块">{ }</button>
+      <button class="toolbar-btn" onclick="insert('\n---\n', '')" title="分割线">—</button>
+      <button class="toolbar-btn" onclick="insertTable()" title="表格">▦</button>
+      <div class="toolbar-spacer"></div>
+      <div class="pane-toggle">
+        <button id="showEditor" class="active">编辑</button>
+        <button id="showPreview">预览</button>
+      </div>
+    </div>
+    <div class="editor-container">
+      <div class="editor-pane" id="editorPane">
+        <div class="pane-header">Markdown 源码</div>
+        <div class="pane-body">
+          <textarea class="markdown-editor" id="editor" placeholder="在这里输入 Markdown 内容...
+
+# 标题
+## 二级标题
+
+**粗体** *斜体* ~~删除线~~
+
+- 列表项 1
+- 列表项 2
+
+> 引用文本
+
+`行内代码`
+
+```javascript
+// 代码块
+console.log('Hello World');
+```
+
+[链接文字](https://example.com)
+
+| 表头1 | 表头2 |
+|-------|-------|
+| 单元格 | 单元格 |
+"></textarea>
+        </div>
+      </div>
+      <div class="preview-pane" id="previewPane">
+        <div class="pane-header">实时预览</div>
+        <div class="pane-body">
+          <div class="preview-content" id="preview"></div>
+        </div>
+      </div>
+    </div>
+  </main>
+  <footer class="footer"><a href="../">← 返回主页</a></footer>
+  <script>
+    // Theme
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    const themeIcon = document.getElementById('themeIcon');
+    function setTheme(t) {
+      if (t === 'light') { document.documentElement.setAttribute('data-theme', 'light'); themeIcon.textContent = '☀️'; }
+      else { document.documentElement.removeAttribute('data-theme'); themeIcon.textContent = '🌙'; }
+      localStorage.setItem('theme', t);
+    }
+    setTheme(savedTheme);
+    document.getElementById('themeToggle').onclick = () => setTheme(document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light');
+
+    // Configure marked
+    marked.setOptions({
+      highlight: (code, lang) => lang && hljs.getLanguage(lang) ? hljs.highlight(code, { language: lang }).value : hljs.highlightAuto(code).value,
+      breaks: true,
+      gfm: true
+    });
+
+    const editor = document.getElementById('editor');
+    const preview = document.getElementById('preview');
+    const fileName = document.getElementById('fileName');
+
+    // Live preview
+    function updatePreview() {
+      preview.innerHTML = marked.parse(editor.value);
+      preview.querySelectorAll('pre code').forEach(block => hljs.highlightElement(block));
+    }
+    editor.addEventListener('input', updatePreview);
+
+    // Insert helpers
+    function insert(before, after) {
+      const start = editor.selectionStart;
+      const end = editor.selectionEnd;
+      const text = editor.value;
+      const selected = text.substring(start, end);
+      editor.value = text.substring(0, start) + before + selected + after + text.substring(end);
+      editor.focus();
+      editor.setSelectionRange(start + before.length, start + before.length + selected.length);
+      updatePreview();
+    }
+
+    function insertCodeBlock() {
+      insert('\n```javascript\n', '\n```\n');
+    }
+
+    function insertTable() {
+      insert('\n| 列1 | 列2 | 列3 |\n|-----|-----|-----|\n| 内容 | 内容 | 内容 |\n', '');
+    }
+
+    // Clear
+    document.getElementById('clearBtn').onclick = () => {
+      if (confirm('确定要清空内容吗？')) {
+        editor.value = '';
+        updatePreview();
+      }
+    };
+
+    // Download MD
+    document.getElementById('downloadMd').onclick = () => {
+      const name = fileName.value.trim() || 'document';
+      const blob = new Blob([editor.value], { type: 'text/markdown' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `${name}.md`;
+      a.click();
+      showToast('MD 文件已下载');
+    };
+
+    // Download HTML
+    document.getElementById('downloadHtml').onclick = () => {
+      const name = fileName.value.trim() || 'document';
+      const isDark = document.documentElement.getAttribute('data-theme') !== 'light';
+      const html = `<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${name}</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500;600&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/${isDark ? 'atom-one-dark' : 'atom-one-light'}.min.css">
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{font-family:'Noto Serif SC',serif;background:${isDark ? '#0d0d14' : '#f8f9fc'};color:${isDark ? '#f0f0f5' : '#1a1a2e'};line-height:1.9;padding:3rem 2rem;max-width:800px;margin:0 auto}
+    h1,h2,h3{font-family:system-ui,sans-serif;margin:2rem 0 1rem}
+    h1{font-size:2rem;border-bottom:2px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'};padding-bottom:0.5rem}
+    h2{font-size:1.5rem}h3{font-size:1.25rem}
+    p{margin-bottom:1rem;color:${isDark ? '#8a8aa0' : '#5a5a70'}}
+    a{color:#00d9ff}
+    code{font-family:'Fira Code',monospace;background:${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)'};padding:0.2rem 0.5rem;border-radius:4px;font-size:0.85em}
+    pre{background:${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)'};border-radius:10px;padding:1.25rem;overflow-x:auto;margin:1.5rem 0}
+    pre code{background:none;padding:0}
+    blockquote{border-left:4px solid #00d9ff;padding:0.5rem 0 0.5rem 1.5rem;margin:1.5rem 0;background:rgba(0,217,255,0.1);border-radius:0 8px 8px 0}
+    blockquote p{margin:0;font-style:italic}
+    ul,ol{margin:1rem 0;padding-left:2rem}
+    li{margin:0.5rem 0;color:${isDark ? '#8a8aa0' : '#5a5a70'}}
+    table{width:100%;border-collapse:collapse;margin:1.5rem 0}
+    th,td{border:1px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'};padding:0.75rem;text-align:left}
+    th{background:${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)'}}
+    img{max-width:100%;border-radius:8px}
+    hr{border:none;border-top:2px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'};margin:2rem 0}
+  </style>
+</head>
+<body>
+${marked.parse(editor.value)}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"><\/script>
+<script>hljs.highlightAll();<\/script>
+</body>
+</html>`;
+      const blob = new Blob([html], { type: 'text/html' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `${name}.html`;
+      a.click();
+      showToast('HTML 文件已下载');
+    };
+
+    function showToast(msg) {
+      const toast = document.createElement('div');
+      toast.className = 'toast';
+      toast.textContent = '✅ ' + msg;
+      document.body.appendChild(toast);
+      setTimeout(() => toast.remove(), 2000);
+    }
+
+    // Mobile toggle
+    const editorPane = document.getElementById('editorPane');
+    const previewPane = document.getElementById('previewPane');
+    const showEditor = document.getElementById('showEditor');
+    const showPreview = document.getElementById('showPreview');
+    
+    showEditor.onclick = () => {
+      editorPane.style.display = 'flex';
+      previewPane.style.display = 'none';
+      showEditor.classList.add('active');
+      showPreview.classList.remove('active');
+    };
+    showPreview.onclick = () => {
+      editorPane.style.display = 'none';
+      previewPane.style.display = 'flex';
+      showEditor.classList.remove('active');
+      showPreview.classList.add('active');
+    };
+
+    // Load saved content
+    const saved = localStorage.getItem('md_content');
+    if (saved) editor.value = saved;
+    updatePreview();
+
+    // Auto save
+    editor.addEventListener('input', () => localStorage.setItem('md_content', editor.value));
+  </script>
+</body>
+</html>

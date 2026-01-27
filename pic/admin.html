@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>相册管理 | Kuan</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root{--primary:#00d9ff;--primary-soft:rgba(0,217,255,0.15);--secondary:#00ff87;--accent:#b400ff;--bg-dark:#0d0d14;--bg-card:rgba(255,255,255,0.04);--bg-card-hover:rgba(255,255,255,0.08);--border:rgba(255,255,255,0.1);--border-hover:rgba(0,217,255,0.4);--text-primary:#f0f0f5;--text-secondary:#8a8aa0;--text-muted:#5a5a70;--danger:#ff4757;--danger-soft:rgba(255,71,87,0.15);--success:#00ff87;--success-soft:rgba(0,255,135,0.15)}
+    [data-theme="light"]{--primary:#0099cc;--primary-soft:rgba(0,153,204,0.12);--secondary:#00cc66;--accent:#9933cc;--bg-dark:#f8f9fc;--bg-card:rgba(255,255,255,0.9);--bg-card-hover:rgba(255,255,255,1);--border:rgba(0,0,0,0.1);--border-hover:rgba(0,153,204,0.4);--text-primary:#1a1a2e;--text-secondary:#5a5a70;--text-muted:#8a8a9e}
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{font-family:'Outfit',sans-serif;background:var(--bg-dark);color:var(--text-primary);min-height:100vh;line-height:1.6;transition:background 0.4s,color 0.4s}
+    .bg-gradient{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:0.3}
+    .bg-gradient::before{content:'';position:absolute;top:-30%;right:-30%;width:60%;height:60%;background:radial-gradient(circle,var(--accent) 0%,transparent 50%)}
+    [data-theme="light"] .bg-gradient{opacity:0.1}
+    .header{position:sticky;top:0;z-index:100;background:var(--bg-dark);border-bottom:1px solid var(--border);backdrop-filter:blur(20px)}
+    [data-theme="light"] .header{background:rgba(248,249,252,0.95)}
+    .header-inner{max-width:1400px;margin:0 auto;padding:1rem 2rem;display:flex;align-items:center;justify-content:space-between}
+    .logo{display:flex;align-items:center;gap:0.75rem;text-decoration:none;color:var(--text-primary)}
+    .logo-icon{width:40px;height:40px;background:linear-gradient(135deg,var(--accent),var(--primary));border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.2rem}
+    .logo-text{font-weight:700;font-size:1.25rem}
+    .logo-text span{color:var(--primary)}
+    .header-actions{display:flex;align-items:center;gap:1rem}
+    .btn{padding:0.6rem 1.25rem;border-radius:10px;font-size:0.85rem;font-weight:500;cursor:pointer;transition:all 0.3s;text-decoration:none;display:inline-flex;align-items:center;gap:0.5rem;border:none;font-family:inherit}
+    .btn-ghost{background:transparent;color:var(--text-secondary);border:1px solid var(--border)}
+    .btn-ghost:hover{color:var(--text-primary);border-color:var(--border-hover);background:var(--bg-card)}
+    .btn-primary{background:linear-gradient(135deg,var(--primary),var(--secondary));color:#000;font-weight:600}
+    .btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 25px rgba(0,217,255,0.3)}
+    .btn-danger{background:var(--danger-soft);color:var(--danger);border:1px solid var(--danger)}
+    .btn-danger:hover{background:var(--danger);color:#fff}
+    .btn-success{background:var(--success-soft);color:var(--success);border:1px solid var(--success)}
+    .btn-success:hover{background:var(--success);color:#000}
+    .btn-sm{padding:0.4rem 0.85rem;font-size:0.8rem}
+    .theme-btn{width:40px;height:40px;border-radius:10px;background:var(--bg-card);border:1px solid var(--border);color:var(--text-muted);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.3s}
+    .theme-btn:hover{border-color:var(--border-hover);color:var(--text-primary)}
+    .main{position:relative;z-index:1;max-width:1400px;margin:0 auto;padding:2rem}
+    .auth-section{background:var(--bg-card);border:1px solid var(--border);border-radius:16px;padding:2rem;margin-bottom:2rem}
+    .auth-title{font-size:1.1rem;font-weight:600;margin-bottom:1rem}
+    .auth-form{display:flex;gap:1rem;flex-wrap:wrap;align-items:flex-end}
+    .form-group{flex:1;min-width:200px}
+    .form-label{display:block;font-size:0.8rem;color:var(--text-secondary);margin-bottom:0.5rem}
+    .form-input{width:100%;padding:0.75rem 1rem;background:var(--bg-card-hover);border:1px solid var(--border);border-radius:10px;color:var(--text-primary);font-size:0.9rem;font-family:inherit;transition:all 0.3s}
+    .form-input:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-soft)}
+    .auth-status{display:flex;align-items:center;gap:0.5rem;padding:0.5rem 1rem;border-radius:8px;font-size:0.85rem}
+    .auth-status.connected{background:var(--success-soft);color:var(--success)}
+    .auth-status.disconnected{background:var(--danger-soft);color:var(--danger)}
+    .instructions{background:var(--primary-soft);border:1px solid var(--border-hover);border-radius:12px;padding:1.5rem;margin-bottom:2rem}
+    .instructions-title{font-weight:600;margin-bottom:0.75rem}
+    .instructions-text{font-size:0.9rem;color:var(--text-secondary);line-height:1.7}
+    .instructions-text a{color:var(--primary)}
+    .instructions-text code{background:var(--bg-card);padding:0.15rem 0.4rem;border-radius:4px;font-family:'Fira Code',monospace;font-size:0.85em}
+    .panel{background:var(--bg-card);border:1px solid var(--border);border-radius:16px;overflow:hidden;margin-bottom:2rem}
+    .panel-header{padding:1.25rem 1.5rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem}
+    .panel-title{font-size:1rem;font-weight:600}
+    .panel-body{padding:1.5rem}
+    .upload-area{border:2px dashed var(--border);border-radius:16px;padding:3rem 2rem;text-align:center;cursor:pointer;transition:all 0.3s}
+    .upload-area:hover,.upload-area.drag-over{border-color:var(--primary);background:var(--primary-soft)}
+    .upload-icon{font-size:3rem;margin-bottom:1rem;opacity:0.5}
+    .upload-text{color:var(--text-secondary);margin-bottom:0.5rem}
+    .upload-hint{font-size:0.8rem;color:var(--text-muted)}
+    .upload-input{display:none}
+    .preview-area{margin-top:1.5rem;display:none}
+    .preview-area.active{display:block}
+    .preview-img{max-width:100%;max-height:300px;border-radius:12px;margin-bottom:1rem}
+    .preview-form{display:flex;flex-direction:column;gap:1rem}
+    .photo-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:1.5rem}
+    .photo-item{position:relative;background:var(--bg-card-hover);border:1px solid var(--border);border-radius:12px;overflow:hidden;aspect-ratio:1}
+    .photo-item img{width:100%;height:100%;object-fit:cover}
+    .photo-item-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,0.9) 0%,transparent 50%);opacity:0;transition:opacity 0.3s;display:flex;flex-direction:column;justify-content:flex-end;padding:1rem}
+    .photo-item:hover .photo-item-overlay{opacity:1}
+    .photo-item-title{font-size:0.9rem;font-weight:500;color:#fff;margin-bottom:0.5rem}
+    .photo-item-actions{display:flex;gap:0.5rem}
+    .empty-photos{text-align:center;padding:3rem;color:var(--text-muted)}
+    .empty-photos-icon{font-size:3rem;margin-bottom:1rem;opacity:0.4}
+    .toast-container{position:fixed;top:80px;right:20px;z-index:1001;display:flex;flex-direction:column;gap:0.5rem}
+    .toast{padding:1rem 1.5rem;border-radius:12px;background:var(--bg-card);border:1px solid var(--border);box-shadow:0 10px 40px rgba(0,0,0,0.3);display:flex;align-items:center;gap:0.75rem;animation:slideIn 0.3s ease}
+    @keyframes slideIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
+    .toast.success{border-color:var(--success);background:var(--success-soft)}
+    .toast.error{border-color:var(--danger);background:var(--danger-soft)}
+    .dialog-overlay{position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,0.8);backdrop-filter:blur(5px);display:flex;align-items:center;justify-content:center;opacity:0;visibility:hidden;transition:all 0.3s}
+    .dialog-overlay.active{opacity:1;visibility:visible}
+    .dialog{background:var(--bg-card);border:1px solid var(--border);border-radius:20px;padding:2rem;max-width:400px;width:90%;text-align:center}
+    .dialog-icon{font-size:3rem;margin-bottom:1rem}
+    .dialog-title{font-size:1.25rem;font-weight:600;margin-bottom:0.5rem}
+    .dialog-text{color:var(--text-secondary);margin-bottom:1.5rem}
+    .dialog-actions{display:flex;gap:1rem;justify-content:center}
+    @media(max-width:768px){.header-inner{padding:1rem}.main{padding:1rem}.auth-form{flex-direction:column}.form-group{min-width:100%}.photo-grid{grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}}
+  </style>
+</head>
+<body>
+  <div class="bg-gradient"></div>
+  <header class="header">
+    <div class="header-inner">
+      <a href="./" class="logo"><div class="logo-icon">⚙️</div><div class="logo-text">相册<span>管理</span></div></a>
+      <div class="header-actions">
+        <a href="./" class="btn btn-ghost">← 返回相册</a>
+        <button class="theme-btn" id="themeToggle"><span id="themeIcon">🌙</span></button>
+      </div>
+    </div>
+  </header>
+  <main class="main">
+    <div class="instructions">
+      <div class="instructions-title">📋 使用说明</div>
+      <div class="instructions-text">
+        <p>1. 在 GitHub 创建 <a href="https://github.com/settings/tokens" target="_blank">Personal Access Token</a>，需要 <code>repo</code> 权限</p>
+        <p>2. 填写 GitHub 用户名、仓库名和 Token，点击连接</p>
+        <p>3. 连接成功后可上传照片（会自动上传到仓库 pic/images 目录），也可管理已有照片</p>
+      </div>
+    </div>
+    <div class="auth-section">
+      <div class="auth-title">🔐 GitHub 连接配置</div>
+      <div class="auth-form">
+        <div class="form-group"><label class="form-label">用户名</label><input type="text" class="form-input" id="githubUser" placeholder="your-username"></div>
+        <div class="form-group"><label class="form-label">仓库名</label><input type="text" class="form-input" id="githubRepo" placeholder="your-repo"></div>
+        <div class="form-group"><label class="form-label">Token</label><input type="password" class="form-input" id="githubToken" placeholder="ghp_xxxx"></div>
+        <button class="btn btn-primary" id="connectBtn">连接</button>
+        <div class="auth-status disconnected" id="authStatus"><span>●</span> 未连接</div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-header">
+        <h2 class="panel-title">📤 上传照片</h2>
+      </div>
+      <div class="panel-body">
+        <div class="upload-area" id="uploadArea">
+          <input type="file" class="upload-input" id="uploadInput" accept="image/*">
+          <div class="upload-icon">📷</div>
+          <div class="upload-text">点击或拖拽照片到此处上传</div>
+          <div class="upload-hint">支持 JPG、PNG、GIF、WebP 格式</div>
+        </div>
+        <div class="preview-area" id="previewArea">
+          <img class="preview-img" id="previewImg" src="" alt="预览">
+          <div class="preview-form">
+            <div class="form-group" style="flex:none">
+              <label class="form-label">照片标题</label>
+              <input type="text" class="form-input" id="photoTitle" placeholder="输入照片标题">
+            </div>
+            <div class="form-group" style="flex:none">
+              <label class="form-label">日期</label>
+              <input type="date" class="form-input" id="photoDate">
+            </div>
+            <div style="display:flex;gap:1rem">
+              <button class="btn btn-ghost" id="cancelUpload">取消</button>
+              <button class="btn btn-success" id="confirmUpload">📤 上传到 GitHub</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-header">
+        <h2 class="panel-title">🖼️ 照片管理</h2>
+        <span id="photoCount" style="color:var(--text-muted);font-size:0.85rem">0 张照片</span>
+      </div>
+      <div class="panel-body">
+        <div id="photoGrid" class="photo-grid">
+          <div class="empty-photos">
+            <div class="empty-photos-icon">📷</div>
+            <p>暂无照片</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+  <div class="toast-container" id="toastContainer"></div>
+  <div class="dialog-overlay" id="dialogOverlay">
+    <div class="dialog">
+      <div class="dialog-icon">⚠️</div>
+      <h3 class="dialog-title">确认删除</h3>
+      <p class="dialog-text">确定要删除这张照片吗？图片文件也会从仓库中删除。</p>
+      <div class="dialog-actions">
+        <button class="btn btn-ghost" id="dialogCancel">取消</button>
+        <button class="btn btn-danger" id="dialogConfirm">确认删除</button>
+      </div>
+    </div>
+  </div>
+  <script>
+    // Theme
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    const themeIcon = document.getElementById('themeIcon');
+    function setTheme(t) {
+      if (t === 'light') { document.documentElement.setAttribute('data-theme', 'light'); themeIcon.textContent = '☀️'; }
+      else { document.documentElement.removeAttribute('data-theme'); themeIcon.textContent = '🌙'; }
+      localStorage.setItem('theme', t);
+    }
+    setTheme(savedTheme);
+    document.getElementById('themeToggle').onclick = () => setTheme(document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light');
+
+    // Elements
+    const $ = id => document.getElementById(id);
+    const githubUser = $('githubUser'), githubRepo = $('githubRepo'), githubToken = $('githubToken');
+    const connectBtn = $('connectBtn'), authStatus = $('authStatus');
+    const uploadArea = $('uploadArea'), uploadInput = $('uploadInput');
+    const previewArea = $('previewArea'), previewImg = $('previewImg');
+    const photoTitle = $('photoTitle'), photoDate = $('photoDate');
+    const cancelUpload = $('cancelUpload'), confirmUpload = $('confirmUpload');
+    const photoGrid = $('photoGrid'), photoCount = $('photoCount');
+    const dialogOverlay = $('dialogOverlay'), dialogCancel = $('dialogCancel'), dialogConfirm = $('dialogConfirm');
+    const toastContainer = $('toastContainer');
+
+    let config = { user: '', repo: '', token: '', connected: false };
+    let photos = [], photosSha = null, currentFile = null, deleteTarget = null;
+
+    // Load saved config
+    githubUser.value = localStorage.getItem('gh_user') || '';
+    githubRepo.value = localStorage.getItem('gh_repo') || '';
+    githubToken.value = localStorage.getItem('gh_token') || '';
+
+    function toast(msg, type = 'success') {
+      const t = document.createElement('div');
+      t.className = `toast ${type}`;
+      t.innerHTML = `<span>${type === 'success' ? '✅' : '❌'}</span><span>${msg}</span>`;
+      toastContainer.appendChild(t);
+      setTimeout(() => t.remove(), 3000);
+    }
+
+    // GitHub API
+    const api = {
+      async get(path) {
+        const res = await fetch(`https://api.github.com/repos/${config.user}/${config.repo}/contents/${path}`, {
+          headers: { Authorization: `token ${config.token}`, Accept: 'application/vnd.github.v3+json' }
+        });
+        if (!res.ok) throw new Error('Failed');
+        return res.json();
+      },
+      async put(path, content, sha = null, isBase64 = false) {
+        const body = { message: `Update ${path}`, content: isBase64 ? content : btoa(unescape(encodeURIComponent(content))) };
+        if (sha) body.sha = sha;
+        const res = await fetch(`https://api.github.com/repos/${config.user}/${config.repo}/contents/${path}`, {
+          method: 'PUT',
+          headers: { Authorization: `token ${config.token}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        });
+        if (!res.ok) throw new Error('Failed');
+        return res.json();
+      },
+      async delete(path, sha) {
+        const res = await fetch(`https://api.github.com/repos/${config.user}/${config.repo}/contents/${path}`, {
+          method: 'DELETE',
+          headers: { Authorization: `token ${config.token}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: `Delete ${path}`, sha })
+        });
+        if (!res.ok) throw new Error('Failed');
+        return res.json();
+      }
+    };
+
+    // Connect
+    connectBtn.onclick = async () => {
+      config.user = githubUser.value.trim();
+      config.repo = githubRepo.value.trim();
+      config.token = githubToken.value.trim();
+      if (!config.user || !config.repo || !config.token) { toast('请填写完整信息', 'error'); return; }
+      try {
+        connectBtn.textContent = '连接中...';
+        const res = await fetch(`https://api.github.com/repos/${config.user}/${config.repo}`, {
+          headers: { Authorization: `token ${config.token}` }
+        });
+        if (!res.ok) throw new Error('Invalid');
+        config.connected = true;
+        authStatus.className = 'auth-status connected';
+        authStatus.innerHTML = '<span>●</span> 已连接';
+        localStorage.setItem('gh_user', config.user);
+        localStorage.setItem('gh_repo', config.repo);
+        localStorage.setItem('gh_token', config.token);
+        toast('连接成功！');
+        loadPhotos();
+      } catch (e) {
+        toast('连接失败', 'error');
+        authStatus.className = 'auth-status disconnected';
+        authStatus.innerHTML = '<span>●</span> 连接失败';
+      }
+      connectBtn.textContent = '连接';
+    };
+
+    // Load photos
+    async function loadPhotos() {
+      if (!config.connected) return;
+      try {
+        const data = await api.get('pic/images/photos.json');
+        photosSha = data.sha;
+        photos = JSON.parse(decodeURIComponent(escape(atob(data.content))));
+        renderPhotos();
+      } catch (e) {
+        photos = []; photosSha = null;
+        renderPhotos();
+      }
+    }
+
+    function renderPhotos() {
+      photoCount.textContent = `${photos.length} 张照片`;
+      if (photos.length === 0) {
+        photoGrid.innerHTML = '<div class="empty-photos"><div class="empty-photos-icon">📷</div><p>暂无照片</p></div>';
+        return;
+      }
+      photos.sort((a, b) => new Date(b.date) - new Date(a.date));
+      photoGrid.innerHTML = photos.map(p => `
+        <div class="photo-item" data-id="${p.id}">
+          <img src="${p.url}" alt="${escapeHtml(p.title)}" loading="lazy">
+          <div class="photo-item-overlay">
+            <div class="photo-item-title">${escapeHtml(p.title)}</div>
+            <div class="photo-item-actions">
+              <button class="btn btn-danger btn-sm" onclick="deletePhoto('${p.id}')">🗑️ 删除</button>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function escapeHtml(t) { const d = document.createElement('div'); d.textContent = t; return d.innerHTML; }
+
+    // Upload
+    uploadArea.onclick = () => uploadInput.click();
+    uploadArea.ondragover = e => { e.preventDefault(); uploadArea.classList.add('drag-over'); };
+    uploadArea.ondragleave = () => uploadArea.classList.remove('drag-over');
+    uploadArea.ondrop = e => { e.preventDefault(); uploadArea.classList.remove('drag-over'); handleFile(e.dataTransfer.files[0]); };
+    uploadInput.onchange = () => handleFile(uploadInput.files[0]);
+
+    function handleFile(file) {
+      if (!file || !file.type.startsWith('image/')) { toast('请选择图片文件', 'error'); return; }
+      currentFile = file;
+      const reader = new FileReader();
+      reader.onload = e => {
+        previewImg.src = e.target.result;
+        previewArea.classList.add('active');
+        uploadArea.style.display = 'none';
+        photoTitle.value = file.name.replace(/\.[^.]+$/, '');
+        photoDate.value = new Date().toISOString().split('T')[0];
+      };
+      reader.readAsDataURL(file);
+    }
+
+    cancelUpload.onclick = () => {
+      currentFile = null;
+      previewArea.classList.remove('active');
+      uploadArea.style.display = 'block';
+      uploadInput.value = '';
+    };
+
+    confirmUpload.onclick = async () => {
+      if (!config.connected) { toast('请先连接 GitHub', 'error'); return; }
+      if (!currentFile) return;
+      const title = photoTitle.value.trim() || '未命名';
+      const date = photoDate.value || new Date().toISOString().split('T')[0];
+      const ext = currentFile.name.split('.').pop().toLowerCase();
+      const fileName = `${Date.now()}.${ext}`;
+
+      try {
+        confirmUpload.textContent = '上传中...';
+        
+        // Upload image file
+        const reader = new FileReader();
+        reader.onload = async e => {
+          const base64 = e.target.result.split(',')[1];
+          await api.put(`pic/images/${fileName}`, base64, null, true);
+          
+          // Update photos.json
+          const photo = {
+            id: Date.now().toString(),
+            title,
+            date,
+            url: `images/${fileName}`,
+            fileName
+          };
+          photos.unshift(photo);
+          const result = await api.put('pic/images/photos.json', JSON.stringify(photos, null, 2), photosSha);
+          photosSha = result.content.sha;
+          
+          toast('上传成功！');
+          cancelUpload.click();
+          renderPhotos();
+        };
+        reader.readAsDataURL(currentFile);
+      } catch (e) {
+        toast('上传失败', 'error');
+      }
+      confirmUpload.textContent = '📤 上传到 GitHub';
+    };
+
+    // Delete
+    window.deletePhoto = id => {
+      deleteTarget = id;
+      dialogOverlay.classList.add('active');
+    };
+    dialogCancel.onclick = () => { dialogOverlay.classList.remove('active'); deleteTarget = null; };
+    dialogConfirm.onclick = async () => {
+      dialogOverlay.classList.remove('active');
+      if (!deleteTarget) return;
+      const photo = photos.find(p => p.id === deleteTarget);
+      if (!photo) return;
+
+      try {
+        // Delete image file
+        const imgData = await api.get(`pic/images/${photo.fileName}`);
+        await api.delete(`pic/images/${photo.fileName}`, imgData.sha);
+        
+        // Update photos.json
+        photos = photos.filter(p => p.id !== deleteTarget);
+        const result = await api.put('pic/images/photos.json', JSON.stringify(photos, null, 2), photosSha);
+        photosSha = result.content.sha;
+        
+        toast('删除成功！');
+        renderPhotos();
+      } catch (e) {
+        toast('删除失败', 'error');
+      }
+      deleteTarget = null;
+    };
+
+    // Auto connect
+    if (githubUser.value && githubRepo.value && githubToken.value) {
+      connectBtn.click();
+    }
+  </script>
+</body>
+</html>
