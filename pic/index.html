@@ -128,7 +128,10 @@
 
     async function loadPhotos() {
       try {
-        const res = await fetch('images/photos.json');
+        // 添加时间戳参数防止浏览器缓存
+        const res = await fetch('images/photos.json?t=' + Date.now(), {
+          cache: 'no-store'
+        });
         if (!res.ok) throw new Error('No data');
         photos = await res.json();
         renderGallery();
