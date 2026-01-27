@@ -243,7 +243,10 @@
     // Load blogs from JSON
     async function loadBlogs() {
       try {
-        const response = await fetch('data/blogs.json');
+        // 添加时间戳参数防止浏览器缓存
+        const response = await fetch('data/blogs.json?t=' + Date.now(), {
+          cache: 'no-store'
+        });
         if (!response.ok) throw new Error('Failed to load');
         blogs = await response.json();
         renderBlogs(blogs);
