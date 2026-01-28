@@ -79,15 +79,24 @@
     .editor-meta .form-group{flex:none;min-width:auto}
     .editor-meta .form-input{padding:0.5rem 0.75rem;font-size:0.85rem}
     .tags-input{min-width:250px}
-    .editor-body{flex:1;display:grid;grid-template-columns:1fr 1fr;min-height:400px}
-    @media(max-width:900px){.editor-body{grid-template-columns:1fr}}
-    .editor-pane{display:flex;flex-direction:column;border-right:1px solid var(--border)}
+    .editor-body{flex:1;display:flex;min-height:400px;overflow:hidden}
+    .editor-pane{display:flex;flex-direction:column;border-right:1px solid var(--border);flex:1;min-width:0;transition:flex 0.3s ease}
     .editor-pane:last-child{border-right:none}
-    .pane-header{padding:0.75rem 1rem;background:var(--bg-card-hover);border-bottom:1px solid var(--border);font-size:0.8rem;font-weight:500;color:var(--text-secondary)}
+    .editor-pane.full-width{flex:2}
+    .editor-pane.hidden{display:none}
+    .pane-header{padding:0.75rem 1rem;background:var(--bg-card-hover);border-bottom:1px solid var(--border);font-size:0.8rem;font-weight:500;color:var(--text-secondary);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+    .pane-header-title{display:flex;align-items:center;gap:0.5rem}
+    .pane-toggle{padding:0.3rem 0.6rem;border-radius:6px;font-size:0.75rem;cursor:pointer;transition:all 0.3s;background:var(--bg-card);border:1px solid var(--border);color:var(--text-muted);display:flex;align-items:center;gap:0.3rem}
+    .pane-toggle:hover{border-color:var(--border-hover);color:var(--text-primary)}
+    .pane-toggle.active{background:var(--primary-soft);border-color:var(--primary);color:var(--primary)}
     .pane-body{flex:1;overflow:auto}
-    .markdown-editor{width:100%;height:100%;min-height:350px;padding:1.5rem;background:transparent;border:none;color:var(--text-primary);font-family:'Fira Code',monospace;font-size:0.9rem;line-height:1.8;resize:none}
+    .markdown-editor{width:100%;height:100%;min-height:350px;padding:1.5rem;background:transparent;border:none;color:var(--text-primary);font-family:'Fira Code',monospace;font-size:0.9rem;line-height:1.8;resize:none;white-space:pre;overflow-x:auto}
     .markdown-editor:focus{outline:none}
-    .preview-content{padding:1.5rem;font-family:'Noto Serif SC','Outfit',serif;font-size:0.95rem;line-height:1.8}
+    .preview-content{padding:1.5rem;font-family:'Noto Serif SC','Outfit',serif;font-size:0.95rem;line-height:1.8;overflow-x:auto}
+    .preview-content pre{max-width:100%;overflow-x:auto}
+    .preview-content img{max-width:100%}
+    .preview-content table{display:block;overflow-x:auto;white-space:nowrap}
+    @media(max-width:900px){.editor-body{flex-direction:column}.editor-pane{border-right:none;border-bottom:1px solid var(--border)}.editor-pane:last-child{border-bottom:none}}
     .preview-content h1,.preview-content h2,.preview-content h3{margin:1.5rem 0 0.75rem;font-family:'Outfit',sans-serif}
     .preview-content p{margin-bottom:1rem;color:var(--text-secondary)}
     .preview-content code{font-family:'Fira Code',monospace;background:var(--bg-card-hover);padding:0.15rem 0.4rem;border-radius:4px;font-size:0.85em}
@@ -190,9 +199,21 @@
             <div class="form-group"><label class="form-label">日期</label><input type="date" class="form-input" id="editorDate"></div>
             <div class="form-group"><label class="form-label">标签（逗号分隔）</label><input type="text" class="form-input tags-input" id="editorTags" placeholder="技术, 生活"></div>
           </div>
-          <div class="editor-body">
-            <div class="editor-pane"><div class="pane-header">📝 Markdown 编辑</div><div class="pane-body"><textarea class="markdown-editor" id="editorContent" placeholder="开始写作..."></textarea></div></div>
-            <div class="editor-pane"><div class="pane-header">👁 实时预览</div><div class="pane-body"><div class="preview-content" id="previewContent"></div></div></div>
+          <div class="editor-body" id="editorBody">
+            <div class="editor-pane" id="editorPane">
+              <div class="pane-header">
+                <span class="pane-header-title">📝 Markdown 编辑</span>
+                <button class="pane-toggle active" id="previewToggle">👁 预览</button>
+              </div>
+              <div class="pane-body"><textarea class="markdown-editor" id="editorContent" placeholder="开始写作..."></textarea></div>
+            </div>
+            <div class="editor-pane" id="previewPane">
+              <div class="pane-header">
+                <span class="pane-header-title">👁 实时预览</span>
+                <button class="pane-toggle" id="previewClose">✕ 关闭</button>
+              </div>
+              <div class="pane-body"><div class="preview-content" id="previewContent"></div></div>
+            </div>
           </div>
           <div class="editor-actions">
             <button class="btn btn-ghost" id="cancelBtn">取消</button>
@@ -364,6 +385,30 @@
     const dialogOverlay = document.getElementById('dialogOverlay');
     const dialogCancel = document.getElementById('dialogCancel');
     const dialogConfirm = document.getElementById('dialogConfirm');
+    
+    // 预览切换功能
+    const editorPane = document.getElementById('editorPane');
+    const previewPane = document.getElementById('previewPane');
+    const previewToggle = document.getElementById('previewToggle');
+    const previewClose = document.getElementById('previewClose');
+    let previewVisible = true;
+
+    function togglePreview(show) {
+      previewVisible = show;
+      if (show) {
+        previewPane.classList.remove('hidden');
+        editorPane.classList.remove('full-width');
+        previewToggle.classList.add('active');
+        previewContent.innerHTML = marked.parse(editorContent.value);
+      } else {
+        previewPane.classList.add('hidden');
+        editorPane.classList.add('full-width');
+        previewToggle.classList.remove('active');
+      }
+    }
+
+    previewToggle.onclick = () => togglePreview(!previewVisible);
+    previewClose.onclick = () => togglePreview(false);
 
     async function loadBlogs() {
       if (!config.connected) return;
@@ -384,7 +429,7 @@
 
     function escapeHtml(t) { const d = document.createElement('div'); d.textContent = t; return d.innerHTML; }
 
-    editorContent.oninput = () => { previewContent.innerHTML = marked.parse(editorContent.value); };
+    editorContent.oninput = () => { if (previewVisible) previewContent.innerHTML = marked.parse(editorContent.value); };
     
     newPostBtn.onclick = () => {
       if (!config.connected) { toast('请先连接 GitHub', 'error'); return; }
