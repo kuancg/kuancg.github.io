@@ -7,9 +7,6 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&family=Noto+Serif+SC:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <style>
     :root{--primary:#00d9ff;--primary-soft:rgba(0,217,255,0.15);--secondary:#00ff87;--accent:#b400ff;--bg-dark:#0d0d14;--bg-card:rgba(255,255,255,0.04);--bg-card-hover:rgba(255,255,255,0.08);--border:rgba(255,255,255,0.1);--border-hover:rgba(0,217,255,0.4);--text-primary:#f0f0f5;--text-secondary:#8a8aa0;--text-muted:#5a5a70}
     [data-theme="light"]{--primary:#0099cc;--primary-soft:rgba(0,153,204,0.12);--secondary:#00cc66;--accent:#9933cc;--bg-dark:#f8f9fc;--bg-card:rgba(255,255,255,0.9);--bg-card-hover:rgba(255,255,255,1);--border:rgba(0,0,0,0.1);--border-hover:rgba(0,153,204,0.4);--text-primary:#1a1a2e;--text-secondary:#5a5a70;--text-muted:#8a8aa0}
@@ -61,14 +58,14 @@
     /* Blog Grid */
     .blog-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(350px,1fr));gap:2rem}
     
-    .blog-card{background:var(--bg-card);border:1px solid var(--border);border-radius:20px;overflow:hidden;transition:all 0.4s cubic-bezier(0.4,0,0.2,1);cursor:pointer}
+    .blog-card{background:var(--bg-card);border:1px solid var(--border);border-radius:20px;overflow:hidden;transition:all 0.4s cubic-bezier(0.4,0,0.2,1);cursor:pointer;text-decoration:none;display:block}
     .blog-card:hover{transform:translateY(-8px);border-color:var(--border-hover);box-shadow:0 20px 50px rgba(0,0,0,0.2)}
     [data-theme="light"] .blog-card:hover{box-shadow:0 20px 50px rgba(0,0,0,0.08)}
     
     .blog-card-header{padding:2rem 2rem 1rem;border-bottom:1px solid var(--border)}
     .blog-date{font-family:'Fira Code',monospace;font-size:0.75rem;color:var(--primary);margin-bottom:0.75rem;display:flex;align-items:center;gap:0.5rem}
     .blog-date::before{content:'';width:8px;height:8px;background:var(--primary);border-radius:50%}
-    .blog-title{font-size:1.35rem;font-weight:600;line-height:1.4;margin-bottom:0.5rem;transition:color 0.3s}
+    .blog-title{font-size:1.35rem;font-weight:600;line-height:1.4;margin-bottom:0.5rem;transition:color 0.3s;color:var(--text-primary)}
     .blog-card:hover .blog-title{color:var(--primary)}
     
     .blog-card-body{padding:1rem 2rem 2rem}
@@ -83,39 +80,6 @@
     .empty-title{font-size:1.5rem;font-weight:600;margin-bottom:0.5rem;color:var(--text-secondary)}
     .empty-text{color:var(--text-muted)}
     
-    /* Blog Detail Modal */
-    .modal-overlay{position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,0.85);backdrop-filter:blur(10px);opacity:0;visibility:hidden;transition:all 0.3s;overflow-y:auto}
-    .modal-overlay.active{opacity:1;visibility:visible}
-    
-    .modal-content{max-width:800px;margin:2rem auto;background:var(--bg-card);border:1px solid var(--border);border-radius:24px;overflow:hidden;transform:translateY(30px);transition:transform 0.4s cubic-bezier(0.4,0,0.2,1)}
-    .modal-overlay.active .modal-content{transform:translateY(0)}
-    
-    .modal-header{padding:2rem;border-bottom:1px solid var(--border);position:relative}
-    .modal-close{position:absolute;top:1.5rem;right:1.5rem;width:40px;height:40px;border:none;background:var(--bg-card-hover);border-radius:50%;color:var(--text-muted);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.3s}
-    .modal-close:hover{background:var(--primary-soft);color:var(--primary)}
-    
-    .modal-date{font-family:'Fira Code',monospace;font-size:0.8rem;color:var(--primary);margin-bottom:1rem}
-    .modal-title{font-size:2rem;font-weight:700;line-height:1.3}
-    .modal-tags{display:flex;flex-wrap:wrap;gap:0.5rem;margin-top:1rem}
-    
-    .modal-body{padding:2rem}
-    .modal-body .markdown-content{font-family:'Noto Serif SC','Outfit',serif;font-size:1.05rem;line-height:1.9}
-    .markdown-content h1,.markdown-content h2,.markdown-content h3{margin:2rem 0 1rem;font-family:'Outfit',sans-serif;font-weight:600}
-    .markdown-content h1{font-size:1.8rem}
-    .markdown-content h2{font-size:1.5rem}
-    .markdown-content h3{font-size:1.25rem}
-    .markdown-content p{margin-bottom:1.25rem;color:var(--text-secondary)}
-    .markdown-content a{color:var(--primary);text-decoration:none}
-    .markdown-content a:hover{text-decoration:underline}
-    .markdown-content code{font-family:'Fira Code',monospace;background:var(--bg-card-hover);padding:0.2rem 0.5rem;border-radius:6px;font-size:0.9em}
-    .markdown-content pre{background:var(--bg-card-hover);border-radius:12px;padding:1.5rem;overflow-x:auto;margin:1.5rem 0}
-    .markdown-content pre code{background:none;padding:0}
-    .markdown-content blockquote{border-left:4px solid var(--primary);padding-left:1.5rem;margin:1.5rem 0;color:var(--text-muted);font-style:italic}
-    .markdown-content ul,.markdown-content ol{margin:1rem 0;padding-left:2rem}
-    .markdown-content li{margin:0.5rem 0;color:var(--text-secondary)}
-    .markdown-content img{max-width:100%;border-radius:12px;margin:1.5rem 0}
-    .markdown-content hr{border:none;border-top:1px solid var(--border);margin:2rem 0}
-    
     /* Loading */
     .loading{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:4rem;gap:1rem}
     .loading-spinner{width:40px;height:40px;border:3px solid var(--border);border-top-color:var(--primary);border-radius:50%;animation:spin 1s linear infinite}
@@ -128,8 +92,6 @@
       .main{padding:2rem 1rem}
       .page-title{font-size:2rem}
       .blog-grid{grid-template-columns:1fr}
-      .modal-content{margin:1rem;border-radius:20px}
-      .modal-title{font-size:1.5rem}
     }
     
     /* Footer */
@@ -148,10 +110,9 @@
       </a>
       <div class="header-actions">
         <a href="admin.html" class="btn btn-ghost">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
-          管理
+          <span>⚙️</span> 管理
         </a>
-        <button class="theme-btn" id="themeToggle" aria-label="切换主题">
+        <button class="theme-btn" id="themeToggle">
           <span id="themeIcon">🌙</span>
         </button>
       </div>
@@ -161,7 +122,7 @@
   <main class="main">
     <div class="page-header">
       <h1 class="page-title">博客文章</h1>
-      <p class="page-subtitle">记录思考与探索</p>
+      <p class="page-subtitle">记录技术与生活的点滴</p>
     </div>
     
     <div class="search-section">
@@ -179,60 +140,31 @@
   </main>
   
   <footer class="footer">
-    <p>© 2026 Kuan. Built with ❤️</p>
-    <p style="margin-top:0.5rem"><a href="../">返回主页</a></p>
+    <p>© 2024 Kuan's Blog. Powered by <a href="https://github.com" target="_blank">GitHub</a></p>
   </footer>
   
-  <!-- Blog Detail Modal -->
-  <div class="modal-overlay" id="modalOverlay">
-    <div class="modal-content">
-      <div class="modal-header">
-        <button class="modal-close" id="modalClose">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
-        </button>
-        <div class="modal-date" id="modalDate"></div>
-        <h2 class="modal-title" id="modalTitle"></h2>
-        <div class="modal-tags" id="modalTags"></div>
-      </div>
-      <div class="modal-body">
-        <div class="markdown-content" id="modalContent"></div>
-      </div>
-    </div>
-  </div>
-  
   <script>
-    // Theme Management
+    // Theme Toggle
     const themeToggle = document.getElementById('themeToggle');
     const themeIcon = document.getElementById('themeIcon');
     const savedTheme = localStorage.getItem('theme') || 'dark';
     
-    function setTheme(theme) {
-      if (theme === 'light') {
-        document.documentElement.setAttribute('data-theme', 'light');
-        themeIcon.textContent = '☀️';
-        localStorage.setItem('theme', 'light');
-      } else {
-        document.documentElement.removeAttribute('data-theme');
-        themeIcon.textContent = '🌙';
-        localStorage.setItem('theme', 'dark');
-      }
+    if (savedTheme === 'light') {
+      document.documentElement.setAttribute('data-theme', 'light');
+      themeIcon.textContent = '☀️';
     }
     
-    setTheme(savedTheme);
     themeToggle.addEventListener('click', () => {
       const current = document.documentElement.getAttribute('data-theme');
-      setTheme(current === 'light' ? 'dark' : 'light');
-    });
-    
-    // Configure marked
-    marked.setOptions({
-      highlight: function(code, lang) {
-        if (lang && hljs.getLanguage(lang)) {
-          return hljs.highlight(code, { language: lang }).value;
-        }
-        return hljs.highlightAuto(code).value;
-      },
-      breaks: true
+      if (current === 'light') {
+        document.documentElement.removeAttribute('data-theme');
+        localStorage.setItem('theme', 'dark');
+        themeIcon.textContent = '🌙';
+      } else {
+        document.documentElement.setAttribute('data-theme', 'light');
+        localStorage.setItem('theme', 'light');
+        themeIcon.textContent = '☀️';
+      }
     });
     
     // Blog Data Management
@@ -243,7 +175,6 @@
     // Load blogs from JSON
     async function loadBlogs() {
       try {
-        // 添加时间戳参数防止浏览器缓存
         const response = await fetch('data/blogs.json?t=' + Date.now(), {
           cache: 'no-store'
         });
@@ -275,7 +206,7 @@
       blogContainer.innerHTML = `
         <div class="blog-grid">
           ${blogsToRender.map(blog => `
-            <article class="blog-card" data-id="${blog.id}">
+            <a class="blog-card" href="post.html?id=${blog.id}">
               <div class="blog-card-header">
                 <div class="blog-date">${formatDate(blog.date)}</div>
                 <h2 class="blog-title">${escapeHtml(blog.title)}</h2>
@@ -288,19 +219,10 @@
                   </div>
                 ` : ''}
               </div>
-            </article>
+            </a>
           `).join('')}
         </div>
       `;
-      
-      // Add click handlers
-      document.querySelectorAll('.blog-card').forEach(card => {
-        card.addEventListener('click', () => {
-          const id = card.dataset.id;
-          const blog = blogs.find(b => b.id === id);
-          if (blog) showBlogDetail(blog);
-        });
-      });
     }
     
     function getExcerpt(content, maxLength = 150) {
@@ -333,44 +255,6 @@
         (blog.tags && blog.tags.some(tag => tag.toLowerCase().includes(query)))
       );
       renderBlogs(filtered);
-    });
-    
-    // Modal functionality
-    const modalOverlay = document.getElementById('modalOverlay');
-    const modalClose = document.getElementById('modalClose');
-    const modalDate = document.getElementById('modalDate');
-    const modalTitle = document.getElementById('modalTitle');
-    const modalTags = document.getElementById('modalTags');
-    const modalContent = document.getElementById('modalContent');
-    
-    function showBlogDetail(blog) {
-      modalDate.textContent = formatDate(blog.date);
-      modalTitle.textContent = blog.title;
-      modalTags.innerHTML = blog.tags && blog.tags.length 
-        ? blog.tags.map(tag => `<span class="blog-tag">${escapeHtml(tag)}</span>`).join('')
-        : '';
-      modalContent.innerHTML = marked.parse(blog.content);
-      
-      // Highlight code blocks
-      modalContent.querySelectorAll('pre code').forEach(block => {
-        hljs.highlightElement(block);
-      });
-      
-      modalOverlay.classList.add('active');
-      document.body.style.overflow = 'hidden';
-    }
-    
-    function closeModal() {
-      modalOverlay.classList.remove('active');
-      document.body.style.overflow = '';
-    }
-    
-    modalClose.addEventListener('click', closeModal);
-    modalOverlay.addEventListener('click', (e) => {
-      if (e.target === modalOverlay) closeModal();
-    });
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') closeModal();
     });
     
     // Initialize

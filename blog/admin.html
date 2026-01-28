@@ -9,7 +9,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&family=Noto+Serif+SC:wght@400;500;600&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <style>
-    :root{--primary:#00d9ff;--primary-soft:rgba(0,217,255,0.15);--secondary:#00ff87;--accent:#b400ff;--bg-dark:#0d0d14;--bg-card:rgba(255,255,255,0.04);--bg-card-hover:rgba(255,255,255,0.08);--border:rgba(255,255,255,0.1);--border-hover:rgba(0,217,255,0.4);--text-primary:#f0f0f5;--text-secondary:#8a8aa0;--text-muted:#5a5a70;--danger:#ff4757;--danger-soft:rgba(255,71,87,0.15);--success:#00ff87;--success-soft:rgba(0,255,135,0.15)}
+    :root{--primary:#00d9ff;--primary-soft:rgba(0,217,255,0.15);--secondary:#00ff87;--accent:#b400ff;--bg-dark:#0d0d14;--bg-card:rgba(255,255,255,0.04);--bg-card-hover:rgba(255,255,255,0.08);--border:rgba(255,255,255,0.1);--border-hover:rgba(0,217,255,0.4);--text-primary:#f0f0f5;--text-secondary:#8a8aa0;--text-muted:#5a5a70;--danger:#ff4757;--danger-soft:rgba(255,71,87,0.15);--success:#00ff87;--success-soft:rgba(0,255,135,0.15);--warning:#ffa502;--warning-soft:rgba(255,165,2,0.15)}
     [data-theme="light"]{--primary:#0099cc;--primary-soft:rgba(0,153,204,0.12);--secondary:#00cc66;--accent:#9933cc;--bg-dark:#f8f9fc;--bg-card:rgba(255,255,255,0.9);--bg-card-hover:rgba(255,255,255,1);--border:rgba(0,0,0,0.1);--border-hover:rgba(0,153,204,0.4);--text-primary:#1a1a2e;--text-secondary:#5a5a70;--text-muted:#8a8aa0}
     *{margin:0;padding:0;box-sizing:border-box}
     body{font-family:'Outfit',sans-serif;background:var(--bg-dark);color:var(--text-primary);min-height:100vh;line-height:1.6;transition:background 0.4s,color 0.4s}
@@ -33,10 +33,20 @@
     .btn-danger:hover{background:var(--danger);color:#fff}
     .btn-success{background:var(--success-soft);color:var(--success);border:1px solid var(--success)}
     .btn-success:hover{background:var(--success);color:#000}
+    .btn-warning{background:var(--warning-soft);color:var(--warning);border:1px solid var(--warning)}
+    .btn-warning:hover{background:var(--warning);color:#000}
     .btn-sm{padding:0.4rem 0.85rem;font-size:0.8rem}
     .theme-btn{width:40px;height:40px;border-radius:10px;background:var(--bg-card);border:1px solid var(--border);color:var(--text-muted);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.3s}
     .theme-btn:hover{border-color:var(--border-hover);color:var(--text-primary)}
     .main{position:relative;z-index:1;max-width:1400px;margin:0 auto;padding:2rem}
+    .tabs{display:flex;gap:0.5rem;margin-bottom:2rem;background:var(--bg-card);padding:0.5rem;border-radius:14px;border:1px solid var(--border)}
+    .tab{padding:0.75rem 1.5rem;border-radius:10px;font-size:0.9rem;font-weight:500;cursor:pointer;transition:all 0.3s;background:transparent;border:none;color:var(--text-secondary);display:flex;align-items:center;gap:0.5rem}
+    .tab:hover{color:var(--text-primary);background:var(--bg-card-hover)}
+    .tab.active{background:linear-gradient(135deg,var(--primary),var(--secondary));color:#000}
+    .tab-badge{background:var(--danger);color:#fff;padding:0.15rem 0.5rem;border-radius:10px;font-size:0.7rem;font-weight:600}
+    .tab.active .tab-badge{background:rgba(0,0,0,0.3)}
+    .tab-content{display:none}
+    .tab-content.active{display:block}
     .auth-section{background:var(--bg-card);border:1px solid var(--border);border-radius:16px;padding:2rem;margin-bottom:2rem}
     .auth-title{font-size:1.1rem;font-weight:600;margin-bottom:1rem;display:flex;align-items:center;gap:0.5rem}
     .auth-form{display:flex;gap:1rem;flex-wrap:wrap;align-items:flex-end}
@@ -44,6 +54,7 @@
     .form-label{display:block;font-size:0.8rem;color:var(--text-secondary);margin-bottom:0.5rem}
     .form-input{width:100%;padding:0.75rem 1rem;background:var(--bg-card-hover);border:1px solid var(--border);border-radius:10px;color:var(--text-primary);font-size:0.9rem;font-family:inherit;transition:all 0.3s}
     .form-input:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-soft)}
+    .form-textarea{min-height:100px;resize:vertical}
     .auth-status{display:flex;align-items:center;gap:0.5rem;padding:0.5rem 1rem;border-radius:8px;font-size:0.85rem}
     .auth-status.connected{background:var(--success-soft);color:var(--success)}
     .auth-status.disconnected{background:var(--danger-soft);color:var(--danger)}
@@ -51,7 +62,7 @@
     @media(max-width:1024px){.panel-layout{grid-template-columns:1fr}}
     .panel{background:var(--bg-card);border:1px solid var(--border);border-radius:16px;overflow:hidden}
     .panel-header{padding:1.25rem 1.5rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
-    .panel-title{font-size:1rem;font-weight:600}
+    .panel-title{font-size:1rem;font-weight:600;display:flex;align-items:center;gap:0.5rem}
     .panel-body{max-height:calc(100vh - 350px);overflow-y:auto}
     .blog-list-item{padding:1.25rem 1.5rem;border-bottom:1px solid var(--border);cursor:pointer;transition:all 0.3s}
     .blog-list-item:hover{background:var(--bg-card-hover)}
@@ -94,7 +105,7 @@
     .toast.error{border-color:var(--danger);background:var(--danger-soft)}
     .dialog-overlay{position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,0.8);backdrop-filter:blur(5px);display:flex;align-items:center;justify-content:center;opacity:0;visibility:hidden;transition:all 0.3s}
     .dialog-overlay.active{opacity:1;visibility:visible}
-    .dialog{background:var(--bg-card);border:1px solid var(--border);border-radius:20px;padding:2rem;max-width:400px;width:90%;text-align:center}
+    .dialog{background:var(--bg-card);border:1px solid var(--border);border-radius:20px;padding:2rem;max-width:500px;width:90%;text-align:center}
     .dialog-icon{font-size:3rem;margin-bottom:1rem}
     .dialog-title{font-size:1.25rem;font-weight:600;margin-bottom:0.5rem}
     .dialog-text{color:var(--text-secondary);margin-bottom:1.5rem}
@@ -104,7 +115,27 @@
     .instructions-text{font-size:0.9rem;color:var(--text-secondary);line-height:1.7}
     .instructions-text a{color:var(--primary)}
     .instructions-text code{background:var(--bg-card);padding:0.15rem 0.4rem;border-radius:4px;font-family:'Fira Code',monospace;font-size:0.85em}
-    @media(max-width:768px){.header-inner{padding:1rem}.main{padding:1rem}.auth-form{flex-direction:column}.form-group{min-width:100%}}
+    /* Comments Management Styles */
+    .comment-card{background:var(--bg-card-hover);border-radius:12px;padding:1.25rem;margin-bottom:1rem;border:1px solid var(--border)}
+    .comment-card.pending{border-left:3px solid var(--warning)}
+    .comment-card.approved{border-left:3px solid var(--success)}
+    .comment-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:0.75rem}
+    .comment-author{font-weight:600}
+    .comment-meta{font-size:0.75rem;color:var(--text-muted);margin-top:0.25rem}
+    .comment-status{padding:0.25rem 0.6rem;border-radius:6px;font-size:0.7rem;font-weight:600}
+    .comment-status.pending{background:var(--warning-soft);color:var(--warning)}
+    .comment-status.approved{background:var(--success-soft);color:var(--success)}
+    .comment-content{color:var(--text-secondary);margin-bottom:1rem;line-height:1.6}
+    .comment-blog{font-size:0.8rem;color:var(--text-muted);margin-bottom:0.75rem}
+    .comment-blog span{color:var(--primary)}
+    .comment-actions{display:flex;gap:0.5rem;flex-wrap:wrap}
+    .reply-indicator{font-size:0.75rem;color:var(--text-muted);margin-top:0.5rem;padding-left:1rem;border-left:2px solid var(--border)}
+    .filter-bar{display:flex;gap:0.5rem;margin-bottom:1.5rem;flex-wrap:wrap}
+    .filter-btn{padding:0.5rem 1rem;border-radius:8px;font-size:0.85rem;cursor:pointer;transition:all 0.3s;background:var(--bg-card);border:1px solid var(--border);color:var(--text-secondary)}
+    .filter-btn:hover{border-color:var(--border-hover);color:var(--text-primary)}
+    .filter-btn.active{background:var(--primary-soft);border-color:var(--primary);color:var(--primary)}
+    .edit-dialog textarea{width:100%;min-height:120px;margin:1rem 0}
+    @media(max-width:768px){.header-inner{padding:1rem}.main{padding:1rem}.auth-form{flex-direction:column}.form-group{min-width:100%}.tabs{flex-wrap:wrap}}
   </style>
 </head>
 <body>
@@ -124,118 +155,174 @@
       <div class="instructions-text">
         <p>1. 在 GitHub 创建 <a href="https://github.com/settings/tokens" target="_blank">Personal Access Token</a>，需要 <code>repo</code> 权限</p>
         <p>2. 填写 GitHub 用户名、仓库名和 Token，点击连接</p>
-        <p>3. 连接成功后即可管理博客，数据自动同步到 GitHub</p>
+        <p>3. 连接成功后即可管理博客和留言，数据自动同步到 GitHub</p>
       </div>
     </div>
     <div class="auth-section">
       <div class="auth-title">🔐 GitHub 连接配置</div>
       <div class="auth-form">
-        <div class="form-group"><label class="form-label">用户名</label><input type="text" class="form-input" id="githubUser" placeholder="your-username"></div>
+        <div class="form-group"><label class="form-label">GitHub 用户名</label><input type="text" class="form-input" id="githubUser" placeholder="your-username"></div>
         <div class="form-group"><label class="form-label">仓库名</label><input type="text" class="form-input" id="githubRepo" placeholder="your-repo"></div>
-        <div class="form-group"><label class="form-label">Token</label><input type="password" class="form-input" id="githubToken" placeholder="ghp_xxxx"></div>
-        <button class="btn btn-primary" id="connectBtn">连接</button>
-        <div class="auth-status disconnected" id="authStatus"><span>●</span> 未连接</div>
+        <div class="form-group"><label class="form-label">Personal Access Token</label><input type="password" class="form-input" id="githubToken" placeholder="ghp_xxxxxxxxxxxx"></div>
+        <button class="btn btn-primary" id="connectBtn">🔗 连接</button>
+        <div class="auth-status disconnected" id="authStatus"><span>⚪</span> 未连接</div>
       </div>
     </div>
-    <div class="panel-layout">
-      <div class="panel">
-        <div class="panel-header"><h2 class="panel-title">文章列表</h2><button class="btn btn-primary btn-sm" id="newPostBtn">+ 新建</button></div>
-        <div class="panel-body" id="blogList"><div class="empty-list"><div class="empty-list-icon">📝</div><p>暂无文章</p></div></div>
+    
+    <div class="tabs">
+      <button class="tab active" data-tab="blogs"><span>📝</span> 文章管理</button>
+      <button class="tab" data-tab="comments"><span>💬</span> 留言管理 <span class="tab-badge" id="pendingBadge">0</span></button>
+    </div>
+    
+    <!-- Blog Management Tab -->
+    <div class="tab-content active" id="blogsTab">
+      <div class="panel-layout">
+        <div class="panel">
+          <div class="panel-header">
+            <span class="panel-title">📄 文章列表</span>
+            <button class="btn btn-primary btn-sm" id="newPostBtn">+ 新文章</button>
+          </div>
+          <div class="panel-body" id="blogList"><div class="empty-list"><div class="empty-list-icon">📝</div><p>暂无文章</p></div></div>
+        </div>
+        <div class="panel editor-panel">
+          <div class="editor-header"><input type="text" class="editor-title-input" id="editorTitle" placeholder="文章标题"></div>
+          <div class="editor-meta">
+            <div class="form-group"><label class="form-label">日期</label><input type="date" class="form-input" id="editorDate"></div>
+            <div class="form-group"><label class="form-label">标签（逗号分隔）</label><input type="text" class="form-input tags-input" id="editorTags" placeholder="技术, 生活"></div>
+          </div>
+          <div class="editor-body">
+            <div class="editor-pane"><div class="pane-header">📝 Markdown 编辑</div><div class="pane-body"><textarea class="markdown-editor" id="editorContent" placeholder="开始写作..."></textarea></div></div>
+            <div class="editor-pane"><div class="pane-header">👁 实时预览</div><div class="pane-body"><div class="preview-content" id="previewContent"></div></div></div>
+          </div>
+          <div class="editor-actions">
+            <button class="btn btn-ghost" id="cancelBtn">取消</button>
+            <button class="btn btn-danger" id="deleteBtn" style="display:none">🗑 删除</button>
+            <button class="btn btn-primary" id="saveBtn">💾 保存</button>
+          </div>
+        </div>
       </div>
-      <div class="panel editor-panel">
-        <div class="editor-header">
-          <input type="text" class="editor-title-input" id="editorTitle" placeholder="输入文章标题...">
-          <button class="btn btn-danger btn-sm" id="deleteBtn" style="display:none">🗑️ 删除</button>
+    </div>
+    
+    <!-- Comments Management Tab -->
+    <div class="tab-content" id="commentsTab">
+      <div class="panel">
+        <div class="panel-header">
+          <span class="panel-title">💬 留言管理</span>
         </div>
-        <div class="editor-meta">
-          <div class="form-group"><label class="form-label">日期</label><input type="date" class="form-input" id="editorDate"></div>
-          <div class="form-group"><label class="form-label">标签（逗号分隔）</label><input type="text" class="form-input tags-input" id="editorTags" placeholder="技术, 生活"></div>
-        </div>
-        <div class="editor-body">
-          <div class="editor-pane"><div class="pane-header">Markdown 编辑</div><div class="pane-body"><textarea class="markdown-editor" id="editorContent" placeholder="在这里写文章内容...&#10;&#10;支持 Markdown 语法"></textarea></div></div>
-          <div class="editor-pane"><div class="pane-header">预览</div><div class="pane-body"><div class="preview-content" id="previewContent"></div></div></div>
-        </div>
-        <div class="editor-actions">
-          <button class="btn btn-ghost" id="cancelBtn">取消</button>
-          <button class="btn btn-success" id="saveBtn">💾 保存</button>
+        <div style="padding:1.5rem">
+          <div class="filter-bar">
+            <button class="filter-btn active" data-filter="all">全部</button>
+            <button class="filter-btn" data-filter="pending">待审核</button>
+            <button class="filter-btn" data-filter="approved">已通过</button>
+          </div>
+          <div id="commentsList"></div>
         </div>
       </div>
     </div>
   </main>
+  
   <div class="toast-container" id="toastContainer"></div>
+  
+  <!-- Delete Blog Dialog -->
   <div class="dialog-overlay" id="dialogOverlay">
     <div class="dialog">
       <div class="dialog-icon">⚠️</div>
-      <h3 class="dialog-title">确认删除</h3>
-      <p class="dialog-text">确定要删除这篇文章吗？</p>
+      <div class="dialog-title">确认删除</div>
+      <div class="dialog-text">此操作不可恢复，确定要删除这篇文章吗？</div>
       <div class="dialog-actions">
         <button class="btn btn-ghost" id="dialogCancel">取消</button>
         <button class="btn btn-danger" id="dialogConfirm">确认删除</button>
       </div>
     </div>
   </div>
+  
+  <!-- Delete Comment Dialog -->
+  <div class="dialog-overlay" id="commentDialogOverlay">
+    <div class="dialog">
+      <div class="dialog-icon">⚠️</div>
+      <div class="dialog-title">确认删除留言</div>
+      <div class="dialog-text">确定要删除这条留言吗？</div>
+      <div class="dialog-actions">
+        <button class="btn btn-ghost" id="commentDialogCancel">取消</button>
+        <button class="btn btn-danger" id="commentDialogConfirm">确认删除</button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Edit Comment Dialog -->
+  <div class="dialog-overlay" id="editDialogOverlay">
+    <div class="dialog edit-dialog">
+      <div class="dialog-title">编辑留言</div>
+      <textarea class="form-input form-textarea" id="editCommentContent"></textarea>
+      <div class="dialog-actions">
+        <button class="btn btn-ghost" id="editDialogCancel">取消</button>
+        <button class="btn btn-primary" id="editDialogConfirm">保存</button>
+      </div>
+    </div>
+  </div>
+
   <script>
     // Theme
+    const themeToggle = document.getElementById('themeToggle');
+    const themeIcon = document.getElementById('themeIcon');
     const savedTheme = localStorage.getItem('theme') || 'dark';
-    function setTheme(t) {
-      if (t === 'light') { document.documentElement.setAttribute('data-theme', 'light'); themeIcon.textContent = '☀️'; }
-      else { document.documentElement.removeAttribute('data-theme'); themeIcon.textContent = '🌙'; }
-      localStorage.setItem('theme', t);
+    if (savedTheme === 'light') { document.documentElement.setAttribute('data-theme', 'light'); themeIcon.textContent = '☀️'; }
+    themeToggle.onclick = () => {
+      const current = document.documentElement.getAttribute('data-theme');
+      if (current === 'light') { document.documentElement.removeAttribute('data-theme'); localStorage.setItem('theme', 'dark'); themeIcon.textContent = '🌙'; }
+      else { document.documentElement.setAttribute('data-theme', 'light'); localStorage.setItem('theme', 'light'); themeIcon.textContent = '☀️'; }
+    };
+
+    // Toast
+    function toast(msg, type = 'success') {
+      const c = document.getElementById('toastContainer');
+      const t = document.createElement('div');
+      t.className = `toast ${type}`;
+      t.innerHTML = `<span>${type === 'success' ? '✓' : '✕'}</span> ${msg}`;
+      c.appendChild(t);
+      setTimeout(() => t.remove(), 3000);
     }
-    setTheme(savedTheme);
-    document.getElementById('themeToggle').onclick = () => setTheme(document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light');
 
-    // Elements
-    const $ = id => document.getElementById(id);
-    const githubUser = $('githubUser'), githubRepo = $('githubRepo'), githubToken = $('githubToken');
-    const connectBtn = $('connectBtn'), authStatus = $('authStatus'), blogList = $('blogList');
-    const newPostBtn = $('newPostBtn'), deleteBtn = $('deleteBtn');
-    const editorTitle = $('editorTitle'), editorDate = $('editorDate'), editorTags = $('editorTags');
-    const editorContent = $('editorContent'), previewContent = $('previewContent');
-    const saveBtn = $('saveBtn'), cancelBtn = $('cancelBtn');
-    const dialogOverlay = $('dialogOverlay'), dialogCancel = $('dialogCancel'), dialogConfirm = $('dialogConfirm');
-    const toastContainer = $('toastContainer');
+    // Tabs
+    document.querySelectorAll('.tab').forEach(tab => {
+      tab.onclick = () => {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        tab.classList.add('active');
+        document.getElementById(tab.dataset.tab + 'Tab').classList.add('active');
+      };
+    });
 
-    let config = { user: '', repo: '', token: '', connected: false };
-    let blogs = [], currentId = null, fileSha = null;
+    // GitHub API
+    const config = { user: '', repo: '', token: '', connected: false };
+    const githubUser = document.getElementById('githubUser');
+    const githubRepo = document.getElementById('githubRepo');
+    const githubToken = document.getElementById('githubToken');
+    const connectBtn = document.getElementById('connectBtn');
+    const authStatus = document.getElementById('authStatus');
 
     // Load saved config
     githubUser.value = localStorage.getItem('gh_user') || '';
     githubRepo.value = localStorage.getItem('gh_repo') || '';
     githubToken.value = localStorage.getItem('gh_token') || '';
 
-    // Toast
-    function toast(msg, type = 'success') {
-      const t = document.createElement('div');
-      t.className = `toast ${type}`;
-      t.innerHTML = `<span class="toast-icon">${type === 'success' ? '✅' : '❌'}</span><span>${msg}</span>`;
-      toastContainer.appendChild(t);
-      setTimeout(() => t.remove(), 3000);
-    }
-
-    // GitHub API
     const api = {
+      base: () => `https://api.github.com/repos/${config.user}/${config.repo}/contents/`,
+      headers: () => ({ 'Authorization': `token ${config.token}`, 'Content-Type': 'application/json' }),
       async get(path) {
-        const res = await fetch(`https://api.github.com/repos/${config.user}/${config.repo}/contents/${path}`, {
-          headers: { Authorization: `token ${config.token}`, Accept: 'application/vnd.github.v3+json' }
-        });
-        if (!res.ok) throw new Error('Failed');
-        return res.json();
+        const r = await fetch(api.base() + path, { headers: api.headers() });
+        if (!r.ok) throw new Error('API Error');
+        return r.json();
       },
       async put(path, content, sha = null) {
         const body = { message: `Update ${path}`, content: btoa(unescape(encodeURIComponent(content))) };
         if (sha) body.sha = sha;
-        const res = await fetch(`https://api.github.com/repos/${config.user}/${config.repo}/contents/${path}`, {
-          method: 'PUT',
-          headers: { Authorization: `token ${config.token}`, 'Content-Type': 'application/json' },
-          body: JSON.stringify(body)
-        });
-        if (!res.ok) throw new Error('Failed');
-        return res.json();
+        const r = await fetch(api.base() + path, { method: 'PUT', headers: api.headers(), body: JSON.stringify(body) });
+        if (!r.ok) throw new Error('API Error');
+        return r.json();
       }
     };
 
-    // Connect
     connectBtn.onclick = async () => {
       config.user = githubUser.value.trim();
       config.repo = githubRepo.value.trim();
@@ -243,27 +330,40 @@
       if (!config.user || !config.repo || !config.token) { toast('请填写完整信息', 'error'); return; }
       try {
         connectBtn.textContent = '连接中...';
-        const res = await fetch(`https://api.github.com/repos/${config.user}/${config.repo}`, {
-          headers: { Authorization: `token ${config.token}` }
-        });
-        if (!res.ok) throw new Error('Invalid');
+        await fetch(`https://api.github.com/repos/${config.user}/${config.repo}`, { headers: api.headers() });
         config.connected = true;
         authStatus.className = 'auth-status connected';
-        authStatus.innerHTML = '<span>●</span> 已连接';
+        authStatus.innerHTML = '<span>🟢</span> 已连接';
         localStorage.setItem('gh_user', config.user);
         localStorage.setItem('gh_repo', config.repo);
         localStorage.setItem('gh_token', config.token);
         toast('连接成功！');
         loadBlogs();
+        loadComments();
       } catch (e) {
-        toast('连接失败，请检查配置', 'error');
+        toast('连接失败', 'error');
         authStatus.className = 'auth-status disconnected';
-        authStatus.innerHTML = '<span>●</span> 连接失败';
+        authStatus.innerHTML = '<span>🔴</span> 连接失败';
       }
-      connectBtn.textContent = '连接';
+      connectBtn.textContent = '🔗 连接';
     };
 
-    // Load blogs
+    // Blog Management
+    let blogs = [], fileSha = null, currentId = null;
+    const blogList = document.getElementById('blogList');
+    const editorTitle = document.getElementById('editorTitle');
+    const editorDate = document.getElementById('editorDate');
+    const editorTags = document.getElementById('editorTags');
+    const editorContent = document.getElementById('editorContent');
+    const previewContent = document.getElementById('previewContent');
+    const newPostBtn = document.getElementById('newPostBtn');
+    const saveBtn = document.getElementById('saveBtn');
+    const deleteBtn = document.getElementById('deleteBtn');
+    const cancelBtn = document.getElementById('cancelBtn');
+    const dialogOverlay = document.getElementById('dialogOverlay');
+    const dialogCancel = document.getElementById('dialogCancel');
+    const dialogConfirm = document.getElementById('dialogConfirm');
+
     async function loadBlogs() {
       if (!config.connected) return;
       try {
@@ -271,32 +371,18 @@
         fileSha = data.sha;
         blogs = JSON.parse(decodeURIComponent(escape(atob(data.content))));
         renderList();
-      } catch (e) {
-        blogs = []; fileSha = null;
-        renderList();
-      }
+      } catch (e) { blogs = []; fileSha = null; renderList(); }
     }
 
     function renderList() {
-      if (blogs.length === 0) {
-        blogList.innerHTML = '<div class="empty-list"><div class="empty-list-icon">📝</div><p>暂无文章</p></div>';
-        return;
-      }
+      if (blogs.length === 0) { blogList.innerHTML = '<div class="empty-list"><div class="empty-list-icon">📝</div><p>暂无文章</p></div>'; return; }
       blogs.sort((a, b) => new Date(b.date) - new Date(a.date));
-      blogList.innerHTML = blogs.map(b => `
-        <div class="blog-list-item ${currentId === b.id ? 'active' : ''}" data-id="${b.id}">
-          <div class="blog-list-title">${escapeHtml(b.title)}</div>
-          <div class="blog-list-meta">${b.date}</div>
-        </div>
-      `).join('');
-      blogList.querySelectorAll('.blog-list-item').forEach(el => {
-        el.onclick = () => editBlog(el.dataset.id);
-      });
+      blogList.innerHTML = blogs.map(b => `<div class="blog-list-item ${currentId === b.id ? 'active' : ''}" data-id="${b.id}"><div class="blog-list-title">${escapeHtml(b.title)}</div><div class="blog-list-meta">${b.date}</div></div>`).join('');
+      blogList.querySelectorAll('.blog-list-item').forEach(el => { el.onclick = () => editBlog(el.dataset.id); });
     }
 
     function escapeHtml(t) { const d = document.createElement('div'); d.textContent = t; return d.innerHTML; }
 
-    // Editor
     editorContent.oninput = () => { previewContent.innerHTML = marked.parse(editorContent.value); };
     
     newPostBtn.onclick = () => {
@@ -335,28 +421,14 @@
       renderList();
     };
 
-    // Save
     saveBtn.onclick = async () => {
       if (!config.connected) { toast('请先连接 GitHub', 'error'); return; }
       const title = editorTitle.value.trim();
       const content = editorContent.value.trim();
       if (!title || !content) { toast('标题和内容不能为空', 'error'); return; }
-      
-      const blog = {
-        id: currentId || Date.now().toString(),
-        title,
-        date: editorDate.value || new Date().toISOString().split('T')[0],
-        tags: editorTags.value.split(',').map(t => t.trim()).filter(t => t),
-        content
-      };
-
-      if (currentId) {
-        const idx = blogs.findIndex(b => b.id === currentId);
-        if (idx !== -1) blogs[idx] = blog;
-      } else {
-        blogs.unshift(blog);
-      }
-
+      const blog = { id: currentId || Date.now().toString(), title, date: editorDate.value || new Date().toISOString().split('T')[0], tags: editorTags.value.split(',').map(t => t.trim()).filter(t => t), content };
+      if (currentId) { const idx = blogs.findIndex(b => b.id === currentId); if (idx !== -1) blogs[idx] = blog; }
+      else { blogs.unshift(blog); }
       try {
         saveBtn.textContent = '保存中...';
         const result = await api.put('blog/data/blogs.json', JSON.stringify(blogs, null, 2), fileSha);
@@ -365,13 +437,10 @@
         toast('保存成功！');
         renderList();
         deleteBtn.style.display = 'inline-flex';
-      } catch (e) {
-        toast('保存失败', 'error');
-      }
+      } catch (e) { toast('保存失败', 'error'); }
       saveBtn.textContent = '💾 保存';
     };
 
-    // Delete
     deleteBtn.onclick = () => { dialogOverlay.classList.add('active'); };
     dialogCancel.onclick = () => { dialogOverlay.classList.remove('active'); };
     dialogConfirm.onclick = async () => {
@@ -383,10 +452,205 @@
         fileSha = result.content.sha;
         toast('删除成功！');
         cancelBtn.click();
-      } catch (e) {
-        toast('删除失败', 'error');
-      }
+      } catch (e) { toast('删除失败', 'error'); }
     };
+
+    // Comments Management
+    let allComments = {}, commentsSha = null, currentFilter = 'all';
+    let deleteTarget = null, editTarget = null;
+    const commentsList = document.getElementById('commentsList');
+    const pendingBadge = document.getElementById('pendingBadge');
+    const commentDialogOverlay = document.getElementById('commentDialogOverlay');
+    const commentDialogCancel = document.getElementById('commentDialogCancel');
+    const commentDialogConfirm = document.getElementById('commentDialogConfirm');
+    const editDialogOverlay = document.getElementById('editDialogOverlay');
+    const editDialogCancel = document.getElementById('editDialogCancel');
+    const editDialogConfirm = document.getElementById('editDialogConfirm');
+    const editCommentContent = document.getElementById('editCommentContent');
+
+    async function loadComments() {
+      if (!config.connected) return;
+      try {
+        const data = await api.get('blog/data/comments.json');
+        commentsSha = data.sha;
+        allComments = JSON.parse(decodeURIComponent(escape(atob(data.content))));
+        renderComments();
+        updatePendingBadge();
+      } catch (e) { allComments = {}; commentsSha = null; renderComments(); }
+    }
+
+    function updatePendingBadge() {
+      let count = 0;
+      Object.values(allComments).forEach(blogComments => {
+        blogComments.forEach(c => {
+          if (!c.approved) count++;
+          (c.replies || []).forEach(r => { if (!r.approved) count++; });
+        });
+      });
+      pendingBadge.textContent = count;
+      pendingBadge.style.display = count > 0 ? 'inline' : 'none';
+    }
+
+    function getBlogTitle(blogId) {
+      const blog = blogs.find(b => b.id === blogId);
+      return blog ? blog.title : '未知文章';
+    }
+
+    function renderComments() {
+      let comments = [];
+      Object.entries(allComments).forEach(([blogId, blogComments]) => {
+        blogComments.forEach(c => {
+          comments.push({ ...c, blogId, isReply: false });
+          (c.replies || []).forEach(r => {
+            comments.push({ ...r, blogId, parentId: c.id, parentAuthor: c.author, isReply: true });
+          });
+        });
+      });
+
+      // Sort by date descending
+      comments.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+      // Filter
+      if (currentFilter === 'pending') comments = comments.filter(c => !c.approved);
+      else if (currentFilter === 'approved') comments = comments.filter(c => c.approved);
+
+      if (comments.length === 0) {
+        commentsList.innerHTML = '<div class="empty-list"><div class="empty-list-icon">💬</div><p>暂无留言</p></div>';
+        return;
+      }
+
+      commentsList.innerHTML = comments.map(c => `
+        <div class="comment-card ${c.approved ? 'approved' : 'pending'}">
+          <div class="comment-header">
+            <div>
+              <div class="comment-author">${escapeHtml(c.author)} ${c.email ? `<span style="font-weight:normal;color:var(--text-muted)">&lt;${escapeHtml(c.email)}&gt;</span>` : ''}</div>
+              <div class="comment-meta">${c.date}</div>
+            </div>
+            <span class="comment-status ${c.approved ? 'approved' : 'pending'}">${c.approved ? '已通过' : '待审核'}</span>
+          </div>
+          <div class="comment-blog">文章：<span>${escapeHtml(getBlogTitle(c.blogId))}</span></div>
+          ${c.isReply ? `<div class="reply-indicator">回复 @${escapeHtml(c.parentAuthor)}</div>` : ''}
+          <div class="comment-content">${escapeHtml(c.content)}</div>
+          <div class="comment-actions">
+            ${!c.approved ? `<button class="btn btn-success btn-sm" onclick="approveComment('${c.blogId}', '${c.id}', ${c.isReply})">✓ 通过</button>` : ''}
+            <button class="btn btn-warning btn-sm" onclick="openEditDialog('${c.blogId}', '${c.id}', ${c.isReply})">✎ 编辑</button>
+            <button class="btn btn-danger btn-sm" onclick="openDeleteDialog('${c.blogId}', '${c.id}', ${c.isReply})">✕ 删除</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // Filter buttons
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+      btn.onclick = () => {
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentFilter = btn.dataset.filter;
+        renderComments();
+      };
+    });
+
+    window.approveComment = async (blogId, commentId, isReply) => {
+      const blogComments = allComments[blogId];
+      if (!blogComments) return;
+
+      if (isReply) {
+        for (const c of blogComments) {
+          const reply = (c.replies || []).find(r => r.id === commentId);
+          if (reply) { reply.approved = true; break; }
+        }
+      } else {
+        const comment = blogComments.find(c => c.id === commentId);
+        if (comment) comment.approved = true;
+      }
+
+      await saveComments();
+      toast('已审核通过！');
+    };
+
+    window.openDeleteDialog = (blogId, commentId, isReply) => {
+      deleteTarget = { blogId, commentId, isReply };
+      commentDialogOverlay.classList.add('active');
+    };
+
+    commentDialogCancel.onclick = () => { commentDialogOverlay.classList.remove('active'); };
+    commentDialogConfirm.onclick = async () => {
+      commentDialogOverlay.classList.remove('active');
+      if (!deleteTarget) return;
+
+      const { blogId, commentId, isReply } = deleteTarget;
+      const blogComments = allComments[blogId];
+      if (!blogComments) return;
+
+      if (isReply) {
+        for (const c of blogComments) {
+          c.replies = (c.replies || []).filter(r => r.id !== commentId);
+        }
+      } else {
+        allComments[blogId] = blogComments.filter(c => c.id !== commentId);
+        if (allComments[blogId].length === 0) delete allComments[blogId];
+      }
+
+      await saveComments();
+      toast('删除成功！');
+      deleteTarget = null;
+    };
+
+    window.openEditDialog = (blogId, commentId, isReply) => {
+      const blogComments = allComments[blogId];
+      if (!blogComments) return;
+
+      let content = '';
+      if (isReply) {
+        for (const c of blogComments) {
+          const reply = (c.replies || []).find(r => r.id === commentId);
+          if (reply) { content = reply.content; break; }
+        }
+      } else {
+        const comment = blogComments.find(c => c.id === commentId);
+        if (comment) content = comment.content;
+      }
+
+      editTarget = { blogId, commentId, isReply };
+      editCommentContent.value = content;
+      editDialogOverlay.classList.add('active');
+    };
+
+    editDialogCancel.onclick = () => { editDialogOverlay.classList.remove('active'); };
+    editDialogConfirm.onclick = async () => {
+      editDialogOverlay.classList.remove('active');
+      if (!editTarget) return;
+
+      const { blogId, commentId, isReply } = editTarget;
+      const newContent = editCommentContent.value.trim();
+      if (!newContent) { toast('内容不能为空', 'error'); return; }
+
+      const blogComments = allComments[blogId];
+      if (!blogComments) return;
+
+      if (isReply) {
+        for (const c of blogComments) {
+          const reply = (c.replies || []).find(r => r.id === commentId);
+          if (reply) { reply.content = newContent; break; }
+        }
+      } else {
+        const comment = blogComments.find(c => c.id === commentId);
+        if (comment) comment.content = newContent;
+      }
+
+      await saveComments();
+      toast('修改成功！');
+      editTarget = null;
+    };
+
+    async function saveComments() {
+      try {
+        const result = await api.put('blog/data/comments.json', JSON.stringify(allComments, null, 2), commentsSha);
+        commentsSha = result.content.sha;
+        renderComments();
+        updatePendingBadge();
+      } catch (e) { toast('保存失败', 'error'); }
+    }
 
     // Auto connect if saved
     if (githubUser.value && githubRepo.value && githubToken.value) {
