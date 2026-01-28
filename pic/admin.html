@@ -178,15 +178,15 @@
   </div>
   <script>
     // Theme
-    const savedTheme = localStorage.getItem('theme') || 'dark';
+    const savedTheme = localStorage.getItem('theme') || 'light';
     const themeIcon = document.getElementById('themeIcon');
     function setTheme(t) {
-      if (t === 'light') { document.documentElement.setAttribute('data-theme', 'light'); themeIcon.textContent = '☀️'; }
-      else { document.documentElement.removeAttribute('data-theme'); themeIcon.textContent = '🌙'; }
+      if (t === 'dark') { document.documentElement.setAttribute('data-theme', 'dark'); themeIcon.textContent = '🌙'; }
+      else { document.documentElement.setAttribute('data-theme', 'light'); themeIcon.textContent = '☀️'; }
       localStorage.setItem('theme', t);
     }
     setTheme(savedTheme);
-    document.getElementById('themeToggle').onclick = () => setTheme(document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light');
+    document.getElementById('themeToggle').onclick = () => setTheme(document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
 
     // Elements
     const $ = id => document.getElementById(id);

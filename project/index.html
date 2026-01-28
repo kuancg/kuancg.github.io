@@ -82,7 +82,7 @@
   <div class="bg-gradient"></div>
   <header class="header">
     <div class="header-inner">
-      <a href="../" class="logo"><div class="logo-icon">📝</div><div class="logo-text">Markdown <span>Editor</span></div></a>
+      <a href="../" class="logo"><div class="logo-icon">📝</div><div class="logo-text">Markdown <span>编辑器</span></div></a>
       <div class="header-actions">
         <input type="text" class="file-input" id="fileName" value="document" placeholder="文件名">
         <span style="color:var(--text-muted);font-size:0.8rem">.md</span>
@@ -161,15 +161,15 @@ console.log('Hello World');
   <footer class="footer"><a href="../">← 返回主页</a></footer>
   <script>
     // Theme
-    const savedTheme = localStorage.getItem('theme') || 'dark';
+    const savedTheme = localStorage.getItem('theme') || 'light';
     const themeIcon = document.getElementById('themeIcon');
     function setTheme(t) {
-      if (t === 'light') { document.documentElement.setAttribute('data-theme', 'light'); themeIcon.textContent = '☀️'; }
-      else { document.documentElement.removeAttribute('data-theme'); themeIcon.textContent = '🌙'; }
+      if (t === 'dark') { document.documentElement.setAttribute('data-theme', 'dark'); themeIcon.textContent = '🌙'; }
+      else { document.documentElement.setAttribute('data-theme', 'light'); themeIcon.textContent = '☀️'; }
       localStorage.setItem('theme', t);
     }
     setTheme(savedTheme);
-    document.getElementById('themeToggle').onclick = () => setTheme(document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light');
+    document.getElementById('themeToggle').onclick = () => setTheme(document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
 
     // Configure marked
     marked.setOptions({

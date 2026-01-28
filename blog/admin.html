@@ -265,12 +265,13 @@
     // Theme
     const themeToggle = document.getElementById('themeToggle');
     const themeIcon = document.getElementById('themeIcon');
-    const savedTheme = localStorage.getItem('theme') || 'dark';
-    if (savedTheme === 'light') { document.documentElement.setAttribute('data-theme', 'light'); themeIcon.textContent = '☀️'; }
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    if (savedTheme === 'dark') { document.documentElement.setAttribute('data-theme', 'dark'); themeIcon.textContent = '🌙'; }
+    else { document.documentElement.setAttribute('data-theme', 'light'); themeIcon.textContent = '☀️'; }
     themeToggle.onclick = () => {
       const current = document.documentElement.getAttribute('data-theme');
-      if (current === 'light') { document.documentElement.removeAttribute('data-theme'); localStorage.setItem('theme', 'dark'); themeIcon.textContent = '🌙'; }
-      else { document.documentElement.setAttribute('data-theme', 'light'); localStorage.setItem('theme', 'light'); themeIcon.textContent = '☀️'; }
+      if (current === 'dark') { document.documentElement.setAttribute('data-theme', 'light'); localStorage.setItem('theme', 'light'); themeIcon.textContent = '☀️'; }
+      else { document.documentElement.setAttribute('data-theme', 'dark'); localStorage.setItem('theme', 'dark'); themeIcon.textContent = '🌙'; }
     };
 
     // Toast
