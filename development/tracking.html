@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>目标跟踪评估工具 | OTB Style</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <style>
+        :root{--primary:#00d9ff;--primary-soft:rgba(0,217,255,0.15);--secondary:#00ff87;--accent:#b400ff;--bg-dark:#0d0d14;--bg-card:rgba(255,255,255,0.04);--bg-card-hover:rgba(255,255,255,0.08);--border:rgba(255,255,255,0.1);--border-hover:rgba(0,217,255,0.4);--text-primary:#f0f0f5;--text-secondary:#8a8aa0;--text-muted:#5a5a70;--danger:#ff4757;--success:#00ff87;--warning:#ffa502}
+        [data-theme="light"]{--primary:#0099cc;--primary-soft:rgba(0,153,204,0.12);--secondary:#00cc66;--accent:#9933cc;--bg-dark:#f8f9fc;--bg-card:rgba(255,255,255,0.9);--bg-card-hover:rgba(255,255,255,1);--border:rgba(0,0,0,0.1);--border-hover:rgba(0,153,204,0.4);--text-primary:#1a1a2e;--text-secondary:#5a5a70;--text-muted:#8a8aa0}
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:'Outfit',sans-serif;background:var(--bg-dark);color:var(--text-primary);min-height:100vh;line-height:1.6}
+        .bg-gradient{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:0.25}
+        .bg-gradient::before{content:'';position:absolute;top:-30%;left:-30%;width:60%;height:60%;background:radial-gradient(circle,var(--primary) 0%,transparent 50%)}
+        [data-theme="light"] .bg-gradient{opacity:0.1}
+        .header{position:sticky;top:0;z-index:100;background:var(--bg-dark);border-bottom:1px solid var(--border);backdrop-filter:blur(20px)}
+        [data-theme="light"] .header{background:rgba(248,249,252,0.95)}
+        .header-inner{max-width:1200px;margin:0 auto;padding:1rem 2rem;display:flex;align-items:center;justify-content:space-between}
+        .logo{display:flex;align-items:center;gap:0.75rem;text-decoration:none;color:var(--text-primary)}
+        .logo-icon{width:40px;height:40px;background:linear-gradient(135deg,var(--primary),var(--secondary));border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.2rem}
+        .logo-text{font-weight:700;font-size:1.25rem}.logo-text span{color:var(--primary)}
+        .header-actions{display:flex;gap:1rem}
+        .btn{padding:0.6rem 1.25rem;border-radius:10px;font-size:0.85rem;font-weight:500;cursor:pointer;transition:all 0.3s;text-decoration:none;display:inline-flex;align-items:center;gap:0.5rem;border:none;font-family:inherit}
+        .btn-ghost{background:transparent;color:var(--text-secondary);border:1px solid var(--border)}
+        .btn-ghost:hover{color:var(--text-primary);border-color:var(--border-hover);background:var(--bg-card)}
+        .btn-primary{background:linear-gradient(135deg,var(--primary),var(--secondary));color:#000;font-weight:600}
+        .btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 25px rgba(0,217,255,0.3)}
+        .btn-primary:disabled{opacity:0.5;cursor:not-allowed;transform:none}
+        .theme-btn{width:40px;height:40px;border-radius:10px;background:var(--bg-card);border:1px solid var(--border);color:var(--text-muted);cursor:pointer;display:flex;align-items:center;justify-content:center}
+        .theme-btn:hover{border-color:var(--border-hover);color:var(--text-primary)}
+        .main{position:relative;z-index:1;max-width:1200px;margin:0 auto;padding:2rem}
+        .page-header{text-align:center;margin-bottom:2rem}
+        .page-title{font-size:2rem;font-weight:700;margin-bottom:0.5rem;background:linear-gradient(135deg,var(--text-primary),var(--primary));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+        .page-subtitle{color:var(--text-secondary);font-size:0.95rem}
+        .card{background:var(--bg-card);border:1px solid var(--border);border-radius:16px;padding:1.5rem;margin-bottom:1.5rem}
+        .card-title{font-size:1rem;font-weight:600;margin-bottom:1rem;display:flex;align-items:center;gap:0.5rem}
+        .upload-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem}
+        @media(max-width:768px){.upload-grid{grid-template-columns:1fr}}
+        .upload-box{border:2px dashed var(--border);border-radius:12px;padding:2rem;text-align:center;cursor:pointer;transition:all 0.3s;position:relative}
+        .upload-box:hover{border-color:var(--primary);background:var(--primary-soft)}
+        .upload-box.has-file{border-color:var(--success);background:rgba(0,255,135,0.1)}
+        .upload-box input{position:absolute;inset:0;opacity:0;cursor:pointer}
+        .upload-icon{font-size:2.5rem;margin-bottom:0.75rem}
+        .upload-label{font-weight:500;margin-bottom:0.25rem}
+        .upload-hint{font-size:0.8rem;color:var(--text-muted)}
+        .upload-filename{margin-top:0.75rem;padding:0.5rem;background:var(--bg-card-hover);border-radius:6px;font-family:'Fira Code',monospace;font-size:0.8rem;color:var(--success)}
+        .info-box{padding:1rem;background:var(--primary-soft);border-radius:10px;font-size:0.85rem;color:var(--text-secondary);margin-bottom:1.5rem}
+        .info-box code{background:var(--bg-card);padding:0.15rem 0.4rem;border-radius:4px;font-family:'Fira Code',monospace;font-size:0.8rem}
+        .progress-container{margin:1.5rem 0;display:none}
+        .progress-bar{height:8px;background:var(--bg-card-hover);border-radius:4px;overflow:hidden}
+        .progress-fill{height:100%;background:linear-gradient(90deg,var(--primary),var(--secondary));border-radius:4px;transition:width 0.3s;width:0%}
+        .progress-text{margin-top:0.5rem;font-size:0.8rem;color:var(--text-muted);text-align:center}
+        .results{display:none}
+        .results-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;flex-wrap:wrap;gap:1rem}
+        .results-title{font-size:1.1rem;font-weight:600}
+        .metrics-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1rem;margin-bottom:1.5rem}
+        .metric-card{background:var(--bg-card-hover);border-radius:10px;padding:1rem;text-align:center}
+        .metric-label{font-size:0.7rem;color:var(--text-muted);text-transform:uppercase;margin-bottom:0.25rem}
+        .metric-value{font-size:1.5rem;font-weight:700;color:var(--primary);font-family:'Fira Code',monospace}
+        .metric-sub{font-size:0.75rem;color:var(--text-muted)}
+        .charts-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-bottom:1.5rem}
+        @media(max-width:900px){.charts-grid{grid-template-columns:1fr}}
+        .chart-card{background:var(--bg-card-hover);border-radius:12px;padding:1rem}
+        .chart-title{font-size:0.85rem;font-weight:600;margin-bottom:0.75rem;display:flex;align-items:center;justify-content:space-between}
+        .chart-title span{font-weight:400;color:var(--text-muted);font-size:0.75rem}
+        .chart-container{position:relative;height:300px}
+        .chart-container canvas{width:100%!important;height:100%!important}
+        .table-container{overflow-x:auto;margin-top:1rem}
+        table{width:100%;border-collapse:collapse;font-size:0.85rem}
+        th,td{padding:0.75rem 1rem;text-align:left;border-bottom:1px solid var(--border)}
+        th{background:var(--bg-card-hover);font-weight:600;font-size:0.75rem;text-transform:uppercase;color:var(--text-muted)}
+        tr:hover{background:var(--bg-card-hover)}
+        td:first-child{font-weight:500}
+        .badge{display:inline-block;padding:0.2rem 0.5rem;border-radius:4px;font-size:0.7rem;font-weight:600}
+        .badge-success{background:rgba(0,255,135,0.2);color:var(--success)}
+        .badge-warning{background:rgba(255,165,2,0.2);color:var(--warning)}
+        .badge-danger{background:rgba(255,71,87,0.2);color:var(--danger)}
+        .toast-container{position:fixed;bottom:20px;right:20px;z-index:1001}
+        .toast{padding:0.75rem 1.25rem;border-radius:10px;background:var(--bg-card);border:1px solid var(--border);box-shadow:0 10px 40px rgba(0,0,0,0.3);animation:slideUp 0.3s;font-size:0.85rem;display:flex;align-items:center;gap:0.5rem}
+        .toast.success{border-color:var(--success)}.toast.error{border-color:var(--danger)}
+        @keyframes slideUp{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
+        .footer{text-align:center;padding:2rem;color:var(--text-muted);font-size:0.85rem;border-top:1px solid var(--border);margin-top:2rem}
+        .footer a{color:var(--primary);text-decoration:none}
+        .legend{display:flex;flex-wrap:wrap;gap:1rem;margin-top:0.75rem;font-size:0.75rem}
+        .legend-item{display:flex;align-items:center;gap:0.35rem}
+        .legend-color{width:12px;height:3px;border-radius:1px}
+    </style>
+</head>
+<body>
+<div class="bg-gradient"></div>
+<header class="header">
+    <div class="header-inner">
+        <a href="../" class="logo"><div class="logo-icon">🎯</div><div class="logo-text">Tracking <span>Eval</span></div></a>
+        <div class="header-actions">
+            <a href="../" class="btn btn-ghost">← 返回主页</a>
+            <button class="theme-btn" id="themeToggle"><span id="themeIcon">☀️</span></button>
+        </div>
+    </div>
+</header>
+
+<main class="main">
+    <div class="page-header">
+        <h1 class="page-title">目标跟踪评估工具</h1>
+        <p class="page-subtitle">OTB 风格 Precision & Success 评估，支持多序列批量计算</p>
+    </div>
+
+    <div class="info-box">
+        <strong>📋 使用说明：</strong><br>
+        1. 准备两个 ZIP 压缩包，分别包含跟踪结果和 Ground Truth<br>
+        2. 每个压缩包内为若干 <code>.txt</code> 文件，文件名为序列名（如 <code>Basketball.txt</code>）<br>
+        3. TXT 格式：每行一帧，格式为 <code>x,y,w,h</code> 或 <code>x y w h</code>（左上角坐标 + 宽高）<br>
+        4. 跟踪结果和 GT 的文件名需一一对应
+    </div>
+
+    <div class="card">
+        <div class="card-title">📁 上传文件</div>
+        <div class="upload-grid">
+            <div class="upload-box" id="trackerBox">
+                <input type="file" accept=".zip" id="trackerFile">
+                <div class="upload-icon">📊</div>
+                <div class="upload-label">跟踪结果 (Tracker)</div>
+                <div class="upload-hint">拖放或点击上传 ZIP 文件</div>
+                <div class="upload-filename" id="trackerName" style="display:none"></div>
+            </div>
+            <div class="upload-box" id="gtBox">
+                <input type="file" accept=".zip" id="gtFile">
+                <div class="upload-icon">✅</div>
+                <div class="upload-label">真实标注 (Ground Truth)</div>
+                <div class="upload-hint">拖放或点击上传 ZIP 文件</div>
+                <div class="upload-filename" id="gtName" style="display:none"></div>
+            </div>
+        </div>
+
+        <div class="progress-container" id="progressContainer">
+            <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+            <div class="progress-text" id="progressText">准备中...</div>
+        </div>
+
+        <div style="text-align:center;margin-top:1.5rem">
+            <button class="btn btn-primary" id="evalBtn" disabled>🚀 开始评估</button>
+        </div>
+    </div>
+
+    <div class="results" id="results">
+        <div class="card">
+            <div class="results-header">
+                <div class="results-title">📈 评估结果</div>
+                <button class="btn btn-ghost" onclick="exportResults()">📥 导出结果</button>
+            </div>
+
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="metric-label">序列数量</div>
+                    <div class="metric-value" id="numSeqs">-</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">总帧数</div>
+                    <div class="metric-value" id="totalFrames">-</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Precision@20</div>
+                    <div class="metric-value" id="precAt20">-</div>
+                    <div class="metric-sub">中心误差 < 20px</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Success AUC</div>
+                    <div class="metric-value" id="successAuc">-</div>
+                    <div class="metric-sub">IoU 曲线下面积</div>
+                </div>
+            </div>
+
+            <div class="charts-grid">
+                <div class="chart-card">
+                    <div class="chart-title">Precision Plot <span>中心位置误差阈值曲线</span></div>
+                    <div class="chart-container"><canvas id="precisionChart"></canvas></div>
+                </div>
+                <div class="chart-card">
+                    <div class="chart-title">Success Plot <span>重叠率阈值曲线 (AUC)</span></div>
+                    <div class="chart-container"><canvas id="successChart"></canvas></div>
+                </div>
+            </div>
+
+            <div class="card-title" style="margin-top:1rem">📋 各序列详细结果</div>
+            <div class="table-container">
+                <table id="seqTable">
+                    <thead>
+                    <tr>
+                        <th>序列名</th>
+                        <th>帧数</th>
+                        <th>Prec@20</th>
+                        <th>Success AUC</th>
+                        <th>平均IoU</th>
+                        <th>平均误差</th>
+                    </tr>
+                    </thead>
+                    <tbody id="seqTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</main>
+
+<footer class="footer"><p>© 2024 Tracking Evaluation Tool. <a href="../">返回主页</a></p></footer>
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+    // Theme
+    const savedTheme=localStorage.getItem('theme')||'light';
+    const themeIcon=document.getElementById('themeIcon');
+    function setTheme(t){if(t==='dark'){document.documentElement.setAttribute('data-theme','dark');themeIcon.textContent='🌙'}else{document.documentElement.setAttribute('data-theme','light');themeIcon.textContent='☀️'}localStorage.setItem('theme',t)}
+    setTheme(savedTheme);
+    document.getElementById('themeToggle').onclick=()=>setTheme(document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark');
+
+    // Toast
+    function toast(m,type='success'){const c=document.getElementById('toastContainer'),t=document.createElement('div');t.className='toast '+type;t.innerHTML=(type==='success'?'✓':'✕')+' '+m;c.appendChild(t);setTimeout(()=>t.remove(),3000)}
+
+    // Files
+    let trackerZip=null,gtZip=null;
+    const trackerFile=document.getElementById('trackerFile');
+    const gtFile=document.getElementById('gtFile');
+    const evalBtn=document.getElementById('evalBtn');
+
+    trackerFile.onchange=e=>{if(e.target.files[0]){trackerZip=e.target.files[0];document.getElementById('trackerBox').classList.add('has-file');document.getElementById('trackerName').style.display='block';document.getElementById('trackerName').textContent=trackerZip.name;checkReady()}};
+    gtFile.onchange=e=>{if(e.target.files[0]){gtZip=e.target.files[0];document.getElementById('gtBox').classList.add('has-file');document.getElementById('gtName').style.display='block';document.getElementById('gtName').textContent=gtZip.name;checkReady()}};
+    function checkReady(){evalBtn.disabled=!(trackerZip&&gtZip)}
+
+    // Parse bbox line
+    function parseLine(line){
+        line=line.trim();
+        if(!line||line.startsWith('#'))return null;
+        // Support formats: x,y,w,h | x y w h | x\ty\tw\th | x,y,x2,y2 (will be detected)
+        let parts=line.replace(/[\t,;]/g,' ').split(/\s+/).map(Number);
+        if(parts.length<4||parts.some(isNaN))return null;
+        return{x:parts[0],y:parts[1],w:parts[2],h:parts[3]};
+    }
+
+    // Calculate center distance
+    function centerDist(b1,b2){
+        const cx1=b1.x+b1.w/2,cy1=b1.y+b1.h/2;
+        const cx2=b2.x+b2.w/2,cy2=b2.y+b2.h/2;
+        return Math.sqrt((cx1-cx2)**2+(cy1-cy2)**2);
+    }
+
+    // Calculate IoU
+    function calcIoU(b1,b2){
+        const x1=Math.max(b1.x,b2.x),y1=Math.max(b1.y,b2.y);
+        const x2=Math.min(b1.x+b1.w,b2.x+b2.w),y2=Math.min(b1.y+b1.h,b2.y+b2.h);
+        const inter=Math.max(0,x2-x1)*Math.max(0,y2-y1);
+        const union=b1.w*b1.h+b2.w*b2.h-inter;
+        return union>0?inter/union:0;
+    }
+
+    // Global results
+    let allResults=[];
+
+    // Main evaluation
+    evalBtn.onclick=async()=>{
+        const progress=document.getElementById('progressContainer');
+        const progressFill=document.getElementById('progressFill');
+        const progressText=document.getElementById('progressText');
+        progress.style.display='block';
+        document.getElementById('results').style.display='none';
+        evalBtn.disabled=true;
+
+        try{
+            progressText.textContent='解压跟踪结果...';
+            progressFill.style.width='10%';
+            const trackerData=await JSZip.loadAsync(trackerZip);
+
+            progressText.textContent='解压Ground Truth...';
+            progressFill.style.width='20%';
+            const gtData=await JSZip.loadAsync(gtZip);
+
+            // Get txt files
+            const trackerFiles={},gtFiles={};
+            for(let fname in trackerData.files){
+                if(fname.endsWith('.txt')&&!trackerData.files[fname].dir){
+                    const name=fname.split('/').pop().replace('.txt','');
+                    trackerFiles[name]=await trackerData.files[fname].async('string');
+                }
+            }
+            for(let fname in gtData.files){
+                if(fname.endsWith('.txt')&&!gtData.files[fname].dir){
+                    const name=fname.split('/').pop().replace('.txt','');
+                    gtFiles[name]=await gtData.files[fname].async('string');
+                }
+            }
+
+            // Match sequences
+            const sequences=Object.keys(trackerFiles).filter(k=>gtFiles[k]);
+            if(sequences.length===0){
+                toast('未找到匹配的序列文件','error');
+                progress.style.display='none';
+                evalBtn.disabled=false;
+                return;
+            }
+
+            progressText.textContent=`评估 ${sequences.length} 个序列...`;
+            progressFill.style.width='30%';
+
+            allResults=[];
+            let totalFrames=0;
+
+            // Precision thresholds (0-50 pixels)
+            const precThresholds=Array.from({length:51},(v,i)=>i);
+            // Success thresholds (0-1, step 0.01)
+            const succThresholds=Array.from({length:101},(v,i)=>i/100);
+
+            // Aggregate
+            const allDistances=[],allIoUs=[];
+
+            for(let i=0;i<sequences.length;i++){
+                const seqName=sequences[i];
+                const trackerLines=trackerFiles[seqName].split('\n');
+                const gtLines=gtFiles[seqName].split('\n');
+
+                const trackerBboxes=trackerLines.map(parseLine).filter(b=>b);
+                const gtBboxes=gtLines.map(parseLine).filter(b=>b);
+
+                const numFrames=Math.min(trackerBboxes.length,gtBboxes.length);
+                if(numFrames===0)continue;
+
+                const distances=[],ious=[];
+
+                for(let f=0;f<numFrames;f++){
+                    const tb=trackerBboxes[f],gb=gtBboxes[f];
+                    if(tb&&gb){
+                        distances.push(centerDist(tb,gb));
+                        ious.push(calcIoU(tb,gb));
+                        allDistances.push(centerDist(tb,gb));
+                        allIoUs.push(calcIoU(tb,gb));
+                    }
+                }
+
+                // Per-sequence metrics
+                const seqPrecAt20=distances.filter(d=>d<20).length/distances.length;
+                const seqSuccessAuc=succThresholds.reduce((sum,th)=>sum+ious.filter(iou=>iou>th).length/ious.length,0)/succThresholds.length;
+                const avgIoU=ious.reduce((a,b)=>a+b,0)/ious.length;
+                const avgDist=distances.reduce((a,b)=>a+b,0)/distances.length;
+
+                allResults.push({
+                    name:seqName,
+                    frames:numFrames,
+                    precAt20:seqPrecAt20,
+                    successAuc:seqSuccessAuc,
+                    avgIoU:avgIoU,
+                    avgDist:avgDist,
+                    distances:distances,
+                    ious:ious
+                });
+
+                totalFrames+=numFrames;
+                progressFill.style.width=(30+60*(i+1)/sequences.length)+'%';
+            }
+
+            progressText.textContent='生成图表...';
+            progressFill.style.width='95%';
+
+            // Overall metrics
+            const overallPrecAt20=allDistances.filter(d=>d<20).length/allDistances.length;
+            const overallSuccessAuc=succThresholds.reduce((sum,th)=>sum+allIoUs.filter(iou=>iou>th).length/allIoUs.length,0)/succThresholds.length;
+
+            // Precision curve
+            const precisionCurve=precThresholds.map(th=>allDistances.filter(d=>d<th).length/allDistances.length);
+            // Success curve
+            const successCurve=succThresholds.map(th=>allIoUs.filter(iou=>iou>th).length/allIoUs.length);
+
+            // Display results
+            document.getElementById('numSeqs').textContent=sequences.length;
+            document.getElementById('totalFrames').textContent=totalFrames.toLocaleString();
+            document.getElementById('precAt20').textContent=(overallPrecAt20*100).toFixed(1)+'%';
+            document.getElementById('successAuc').textContent=(overallSuccessAuc*100).toFixed(1)+'%';
+
+            // Draw charts
+            drawPrecisionChart(precThresholds,precisionCurve,overallPrecAt20);
+            drawSuccessChart(succThresholds,successCurve,overallSuccessAuc);
+
+            // Fill table
+            const tbody=document.getElementById('seqTableBody');
+            tbody.innerHTML='';
+            allResults.sort((a,b)=>b.successAuc-a.successAuc);
+            allResults.forEach(r=>{
+                const precClass=r.precAt20>0.8?'success':r.precAt20>0.5?'warning':'danger';
+                const succClass=r.successAuc>0.6?'success':r.successAuc>0.4?'warning':'danger';
+                tbody.innerHTML+=`<tr>
+        <td>${r.name}</td>
+        <td>${r.frames}</td>
+        <td><span class="badge badge-${precClass}">${(r.precAt20*100).toFixed(1)}%</span></td>
+        <td><span class="badge badge-${succClass}">${(r.successAuc*100).toFixed(1)}%</span></td>
+        <td>${(r.avgIoU*100).toFixed(1)}%</td>
+        <td>${r.avgDist.toFixed(1)}px</td>
+      </tr>`;
+            });
+
+            progressFill.style.width='100%';
+            progressText.textContent='完成！';
+
+            document.getElementById('results').style.display='block';
+            document.getElementById('results').scrollIntoView({behavior:'smooth'});
+
+            toast(`评估完成！共 ${sequences.length} 个序列`);
+
+        }catch(err){
+            console.error(err);
+            toast('评估出错: '+err.message,'error');
+        }
+
+        setTimeout(()=>{
+            progress.style.display='none';
+            evalBtn.disabled=false;
+        },1000);
+    };
+
+    // Draw Precision Chart
+    function drawPrecisionChart(thresholds,curve,precAt20){
+        const canvas=document.getElementById('precisionChart');
+        const ctx=canvas.getContext('2d');
+        const rect=canvas.parentElement.getBoundingClientRect();
+        canvas.width=rect.width*2;
+        canvas.height=rect.height*2;
+        ctx.scale(2,2);
+        const w=rect.width,h=rect.height;
+
+        ctx.clearRect(0,0,w,h);
+
+        const padding={top:20,right:20,bottom:40,left:50};
+        const plotW=w-padding.left-padding.right;
+        const plotH=h-padding.top-padding.bottom;
+
+        // Background
+        const isDark=document.documentElement.getAttribute('data-theme')==='dark';
+        ctx.fillStyle=isDark?'#1a1a2e':'#f0f0f5';
+        ctx.fillRect(padding.left,padding.top,plotW,plotH);
+
+        // Grid
+        ctx.strokeStyle=isDark?'rgba(255,255,255,0.1)':'rgba(0,0,0,0.1)';
+        ctx.lineWidth=0.5;
+        for(let i=0;i<=5;i++){
+            const y=padding.top+plotH*(1-i/5);
+            ctx.beginPath();ctx.moveTo(padding.left,y);ctx.lineTo(padding.left+plotW,y);ctx.stroke();
+        }
+
+        // Curve
+        ctx.strokeStyle='#00d9ff';
+        ctx.lineWidth=2;
+        ctx.beginPath();
+        curve.forEach((v,i)=>{
+            const x=padding.left+(i/50)*plotW;
+            const y=padding.top+plotH*(1-v);
+            i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+        });
+        ctx.stroke();
+
+        // Fill area
+        ctx.fillStyle='rgba(0,217,255,0.15)';
+        ctx.beginPath();
+        ctx.moveTo(padding.left,padding.top+plotH);
+        curve.forEach((v,i)=>{
+            const x=padding.left+(i/50)*plotW;
+            const y=padding.top+plotH*(1-v);
+            ctx.lineTo(x,y);
+        });
+        ctx.lineTo(padding.left+plotW,padding.top+plotH);
+        ctx.closePath();
+        ctx.fill();
+
+        // Mark @20
+        const x20=padding.left+(20/50)*plotW;
+        const y20=padding.top+plotH*(1-precAt20);
+        ctx.strokeStyle='#ff4757';
+        ctx.setLineDash([4,4]);
+        ctx.beginPath();ctx.moveTo(x20,padding.top+plotH);ctx.lineTo(x20,y20);ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.fillStyle='#ff4757';
+        ctx.beginPath();ctx.arc(x20,y20,4,0,Math.PI*2);ctx.fill();
+
+        // Axes labels
+        ctx.fillStyle=isDark?'#8a8aa0':'#5a5a70';
+        ctx.font='11px Outfit';
+        ctx.textAlign='center';
+        ctx.fillText('Location error threshold (pixels)',w/2,h-5);
+        for(let i=0;i<=5;i++){
+            ctx.fillText(i*10,padding.left+(i/5)*plotW,padding.top+plotH+15);
+        }
+        ctx.save();
+        ctx.translate(12,h/2);
+        ctx.rotate(-Math.PI/2);
+        ctx.fillText('Precision',0,0);
+        ctx.restore();
+        for(let i=0;i<=5;i++){
+            ctx.textAlign='right';
+            ctx.fillText((i*20)+'%',padding.left-8,padding.top+plotH*(1-i/5)+4);
+        }
+
+        // Legend
+        ctx.fillStyle=isDark?'#f0f0f5':'#1a1a2e';
+        ctx.font='bold 11px Outfit';
+        ctx.textAlign='left';
+        ctx.fillText(`Precision@20: ${(precAt20*100).toFixed(1)}%`,padding.left+10,padding.top+15);
+    }
+
+    // Draw Success Chart
+    function drawSuccessChart(thresholds,curve,auc){
+        const canvas=document.getElementById('successChart');
+        const ctx=canvas.getContext('2d');
+        const rect=canvas.parentElement.getBoundingClientRect();
+        canvas.width=rect.width*2;
+        canvas.height=rect.height*2;
+        ctx.scale(2,2);
+        const w=rect.width,h=rect.height;
+
+        ctx.clearRect(0,0,w,h);
+
+        const padding={top:20,right:20,bottom:40,left:50};
+        const plotW=w-padding.left-padding.right;
+        const plotH=h-padding.top-padding.bottom;
+
+        const isDark=document.documentElement.getAttribute('data-theme')==='dark';
+        ctx.fillStyle=isDark?'#1a1a2e':'#f0f0f5';
+        ctx.fillRect(padding.left,padding.top,plotW,plotH);
+
+        // Grid
+        ctx.strokeStyle=isDark?'rgba(255,255,255,0.1)':'rgba(0,0,0,0.1)';
+        ctx.lineWidth=0.5;
+        for(let i=0;i<=5;i++){
+            const y=padding.top+plotH*(1-i/5);
+            ctx.beginPath();ctx.moveTo(padding.left,y);ctx.lineTo(padding.left+plotW,y);ctx.stroke();
+        }
+
+        // Curve
+        ctx.strokeStyle='#00ff87';
+        ctx.lineWidth=2;
+        ctx.beginPath();
+        curve.forEach((v,i)=>{
+            const x=padding.left+(i/100)*plotW;
+            const y=padding.top+plotH*(1-v);
+            i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+        });
+        ctx.stroke();
+
+        // Fill area (AUC visualization)
+        ctx.fillStyle='rgba(0,255,135,0.15)';
+        ctx.beginPath();
+        ctx.moveTo(padding.left,padding.top+plotH);
+        curve.forEach((v,i)=>{
+            const x=padding.left+(i/100)*plotW;
+            const y=padding.top+plotH*(1-v);
+            ctx.lineTo(x,y);
+        });
+        ctx.lineTo(padding.left+plotW,padding.top+plotH);
+        ctx.closePath();
+        ctx.fill();
+
+        // Axes labels
+        ctx.fillStyle=isDark?'#8a8aa0':'#5a5a70';
+        ctx.font='11px Outfit';
+        ctx.textAlign='center';
+        ctx.fillText('Overlap threshold (IoU)',w/2,h-5);
+        for(let i=0;i<=5;i++){
+            ctx.fillText((i*0.2).toFixed(1),padding.left+(i/5)*plotW,padding.top+plotH+15);
+        }
+        ctx.save();
+        ctx.translate(12,h/2);
+        ctx.rotate(-Math.PI/2);
+        ctx.fillText('Success rate',0,0);
+        ctx.restore();
+        for(let i=0;i<=5;i++){
+            ctx.textAlign='right';
+            ctx.fillText((i*20)+'%',padding.left-8,padding.top+plotH*(1-i/5)+4);
+        }
+
+        // Legend
+        ctx.fillStyle=isDark?'#f0f0f5':'#1a1a2e';
+        ctx.font='bold 11px Outfit';
+        ctx.textAlign='left';
+        ctx.fillText(`AUC: ${(auc*100).toFixed(1)}%`,padding.left+10,padding.top+15);
+    }
+
+    // Export results
+    function exportResults(){
+        if(allResults.length===0)return;
+
+        let csv='Sequence,Frames,Precision@20,Success_AUC,Avg_IoU,Avg_Distance\n';
+        allResults.forEach(r=>{
+            csv+=`${r.name},${r.frames},${(r.precAt20*100).toFixed(2)},${(r.successAuc*100).toFixed(2)},${(r.avgIoU*100).toFixed(2)},${r.avgDist.toFixed(2)}\n`;
+        });
+
+        // Overall
+        const totalFrames=allResults.reduce((s,r)=>s+r.frames,0);
+        const avgPrec=allResults.reduce((s,r)=>s+r.precAt20,0)/allResults.length;
+        const avgAuc=allResults.reduce((s,r)=>s+r.successAuc,0)/allResults.length;
+        csv+=`\nOverall,${totalFrames},${(avgPrec*100).toFixed(2)},${(avgAuc*100).toFixed(2)},,\n`;
+
+        const blob=new Blob([csv],{type:'text/csv'});
+        const url=URL.createObjectURL(blob);
+        const a=document.createElement('a');
+        a.href=url;
+        a.download='tracking_evaluation_results.csv';
+        a.click();
+        URL.revokeObjectURL(url);
+        toast('结果已导出');
+    }
+
+    // Redraw charts on theme change
+    const originalSetTheme=setTheme;
+    setTheme=function(t){
+        originalSetTheme(t);
+        if(allResults.length>0){
+            // Recalculate and redraw
+            const allDistances=allResults.flatMap(r=>r.distances);
+            const allIoUs=allResults.flatMap(r=>r.ious);
+            const precThresholds=Array.from({length:51},(v,i)=>i);
+            const succThresholds=Array.from({length:101},(v,i)=>i/100);
+            const precisionCurve=precThresholds.map(th=>allDistances.filter(d=>d<th).length/allDistances.length);
+            const successCurve=succThresholds.map(th=>allIoUs.filter(iou=>iou>th).length/allIoUs.length);
+            const overallPrecAt20=allDistances.filter(d=>d<20).length/allDistances.length;
+            const overallSuccessAuc=succThresholds.reduce((sum,th)=>sum+allIoUs.filter(iou=>iou>th).length/allIoUs.length,0)/succThresholds.length;
+            setTimeout(()=>{
+                drawPrecisionChart(precThresholds,precisionCurve,overallPrecAt20);
+                drawSuccessChart(succThresholds,successCurve,overallSuccessAuc);
+            },100);
+        }
+    };
+</script>
+</body>
+</html>
