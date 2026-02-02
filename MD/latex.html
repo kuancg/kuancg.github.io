@@ -1,0 +1,1424 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LaTeX 学术论文工具箱</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Noto+Sans+SC:wght@300;400;500;600;700&family=Crimson+Pro:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<!-- KaTeX CSS & JS -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<style>
+:root {
+  --bg-primary: #FAFAF8;
+  --bg-secondary: #F2F0EC;
+  --bg-card: #FFFFFF;
+  --bg-code: #F7F6F3;
+  --text-primary: #1A1A1A;
+  --text-secondary: #5C5C5C;
+  --text-muted: #8A8A8A;
+  --accent: #2D5F2D;
+  --accent-light: #E8F0E8;
+  --accent-hover: #3A7A3A;
+  --border: #E5E3DE;
+  --border-light: #EDEBE7;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.04);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.06);
+  --shadow-lg: 0 8px 30px rgba(0,0,0,0.08);
+  --radius: 10px;
+  --radius-sm: 6px;
+  --transition: 0.2s ease;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: 'Noto Sans SC', sans-serif;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  line-height: 1.6;
+  min-height: 100vh;
+}
+
+/* HEADER */
+.header {
+  background: rgba(255,255,255,0.92);
+  border-bottom: 1px solid var(--border);
+  padding: 20px 0;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  backdrop-filter: blur(12px);
+}
+.header-inner {
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 0 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.logo { display: flex; align-items: center; gap: 14px; }
+.logo-icon {
+  width: 40px; height: 40px;
+  background: var(--accent);
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  color: white;
+  font-family: 'Crimson Pro', serif;
+  font-size: 20px; font-weight: 600; font-style: italic;
+}
+.logo-text { font-size: 20px; font-weight: 600; letter-spacing: -0.5px; }
+.logo-sub { font-size: 12px; color: var(--text-muted); font-weight: 400; letter-spacing: 0.5px; }
+.header-actions { display: flex; gap: 8px; }
+.header-actions button {
+  padding: 8px 16px;
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: var(--transition);
+  font-family: inherit;
+}
+.header-actions button:hover { border-color: var(--accent); color: var(--accent); }
+
+/* LAYOUT */
+.app {
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 24px 32px;
+  display: flex;
+  gap: 24px;
+  min-height: calc(100vh - 80px);
+}
+
+/* SIDEBAR */
+.sidebar {
+  width: 220px;
+  flex-shrink: 0;
+  position: sticky;
+  top: 100px;
+  height: fit-content;
+  max-height: calc(100vh - 120px);
+  overflow-y: auto;
+}
+.sidebar::-webkit-scrollbar { width: 3px; }
+.sidebar::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+.nav-group { margin-bottom: 20px; }
+.nav-group-title {
+  font-size: 11px; font-weight: 600; text-transform: uppercase;
+  letter-spacing: 1px; color: var(--text-muted); padding: 0 12px; margin-bottom: 6px;
+}
+.nav-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 12px; border-radius: var(--radius-sm);
+  cursor: pointer; font-size: 14px; color: var(--text-secondary);
+  transition: var(--transition); user-select: none;
+}
+.nav-item:hover { background: var(--bg-secondary); color: var(--text-primary); }
+.nav-item.active { background: var(--accent-light); color: var(--accent); font-weight: 500; }
+.nav-icon { width: 18px; text-align: center; font-size: 14px; flex-shrink: 0; }
+
+/* MAIN */
+.main { flex: 1; min-width: 0; }
+.section { display: none; }
+.section.active { display: block; animation: fadeIn 0.25s ease; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+.section-title { font-size: 26px; font-weight: 700; margin-bottom: 6px; letter-spacing: -0.5px; }
+.section-desc { font-size: 14px; color: var(--text-muted); margin-bottom: 24px; }
+
+/* CARDS */
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius);
+  padding: 24px;
+  margin-bottom: 16px;
+  box-shadow: var(--shadow-sm);
+  transition: var(--transition);
+}
+.card:hover { box-shadow: var(--shadow-md); }
+.card-title {
+  font-size: 16px; font-weight: 600; margin-bottom: 12px;
+  display: flex; align-items: center; gap: 8px;
+}
+.card-title .badge {
+  font-size: 11px; padding: 2px 8px;
+  background: var(--accent-light); color: var(--accent);
+  border-radius: 20px; font-weight: 500;
+}
+
+/* CODE BLOCKS */
+.code-block {
+  position: relative;
+  background: var(--bg-code);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-sm);
+  padding: 16px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px; line-height: 1.7;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-break: break-all;
+  color: var(--text-primary);
+  margin: 8px 0;
+}
+.copy-btn {
+  position: absolute; top: 8px; right: 8px;
+  padding: 4px 10px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font-size: 11px; color: var(--text-muted);
+  cursor: pointer; transition: var(--transition);
+  font-family: 'Noto Sans SC', sans-serif;
+  z-index: 2;
+}
+.copy-btn:hover { color: var(--accent); border-color: var(--accent); }
+.copy-btn.copied { color: var(--accent); border-color: var(--accent); }
+
+/* PREVIEW BOX */
+.preview-box {
+  background: #FFFFFF;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 20px 24px;
+  margin: 10px 0 4px 0;
+  min-height: 48px;
+  overflow-x: auto;
+  position: relative;
+}
+.preview-box .katex-display { margin: 0.3em 0; }
+.preview-box .katex { font-size: 1.15em; }
+.preview-label {
+  position: absolute;
+  top: 6px; right: 10px;
+  font-size: 10px;
+  color: var(--text-muted);
+  background: var(--bg-secondary);
+  padding: 1px 8px;
+  border-radius: 3px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  font-family: 'Noto Sans SC', sans-serif;
+  pointer-events: none;
+}
+.preview-error {
+  color: #c0392b;
+  font-size: 12px;
+  font-style: italic;
+}
+
+/* TABLE PREVIEW */
+.table-preview {
+  overflow-x: auto;
+  margin: 10px 0 4px 0;
+}
+.table-preview table {
+  border-collapse: collapse;
+  font-size: 13px;
+  font-family: 'Crimson Pro', 'Noto Sans SC', serif;
+  min-width: 100%;
+}
+.table-preview.threeline table {
+  border-top: 2px solid #333;
+  border-bottom: 2px solid #333;
+}
+.table-preview.threeline thead tr {
+  border-bottom: 1px solid #333;
+}
+.table-preview.threeline th,
+.table-preview.threeline td {
+  padding: 6px 16px;
+  text-align: center;
+}
+.table-preview.threeline th {
+  font-weight: 600;
+  font-size: 13px;
+}
+.table-preview.threeline td {
+  font-size: 13px;
+}
+.table-preview.threeline th:first-child,
+.table-preview.threeline td:first-child {
+  text-align: left;
+}
+
+.table-preview.full-border table {
+  border: 1px solid #999;
+}
+.table-preview.full-border th,
+.table-preview.full-border td {
+  border: 1px solid #999;
+  padding: 5px 14px;
+  text-align: center;
+  font-size: 13px;
+}
+.table-preview.full-border th { background: #f5f5f5; font-weight: 600; }
+
+.table-preview .highlight-row { background: #e8f5e9; }
+.table-preview .bold-cell { font-weight: 700; }
+.table-preview .group-header {
+  font-style: italic;
+  color: var(--text-secondary);
+  text-align: left !important;
+  padding-left: 8px !important;
+  font-size: 12px;
+}
+.table-preview .indent-cell { padding-left: 24px !important; text-align: left !important; }
+.table-preview .group-separator td { border-bottom: 1px solid #ccc; }
+.table-preview .multicolumn-header {
+  text-align: center !important;
+  font-weight: 600;
+  border-bottom: 1px solid #888;
+}
+
+/* SYMBOL GRID */
+.symbol-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 6px;
+}
+.symbol-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 12px;
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-sm);
+  cursor: pointer; transition: var(--transition);
+  font-size: 13px; background: var(--bg-card);
+}
+.symbol-item:hover { border-color: var(--accent); background: var(--accent-light); }
+.symbol-item .sym {
+  font-family: 'JetBrains Mono', monospace; font-size: 12px;
+  color: var(--accent);
+  min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.symbol-item .sym-preview {
+  min-width: 28px; text-align: center;
+}
+.symbol-item .label {
+  color: var(--text-muted); font-size: 12px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+/* CONVERTER */
+.converter-area {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+.converter-panel { display: flex; flex-direction: column; }
+.converter-label { font-size: 13px; font-weight: 500; margin-bottom: 8px; color: var(--text-secondary); }
+.converter-textarea {
+  flex: 1; min-height: 180px; padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px; line-height: 1.6; resize: vertical;
+  background: var(--bg-code); color: var(--text-primary); transition: var(--transition);
+}
+.converter-textarea:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-light); }
+.converter-actions { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+
+.btn {
+  padding: 8px 18px; border-radius: var(--radius-sm); font-size: 13px; font-weight: 500;
+  cursor: pointer; transition: var(--transition); font-family: inherit; border: none;
+}
+.btn-primary { background: var(--accent); color: white; }
+.btn-primary:hover { background: var(--accent-hover); }
+.btn-secondary { background: var(--bg-secondary); color: var(--text-secondary); border: 1px solid var(--border); }
+.btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+
+/* TABS */
+.tabs {
+  display: flex; gap: 2px; background: var(--bg-secondary);
+  border-radius: var(--radius-sm); padding: 3px; margin-bottom: 16px;
+  overflow-x: auto; flex-wrap: wrap;
+}
+.tab {
+  padding: 7px 14px; border-radius: 5px; font-size: 13px;
+  cursor: pointer; transition: var(--transition); color: var(--text-muted);
+  white-space: nowrap; border: none; background: transparent; font-family: inherit;
+}
+.tab:hover { color: var(--text-primary); }
+.tab.active { background: var(--bg-card); color: var(--text-primary); font-weight: 500; box-shadow: var(--shadow-sm); }
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+
+/* SEARCH */
+.search-box { position: relative; margin-bottom: 16px; }
+.search-input {
+  width: 100%; padding: 10px 16px 10px 40px;
+  border: 1px solid var(--border); border-radius: var(--radius-sm);
+  font-size: 14px; font-family: inherit;
+  background: var(--bg-card); color: var(--text-primary); transition: var(--transition);
+}
+.search-input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-light); }
+.search-icon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 14px; }
+
+/* TOAST */
+.toast {
+  position: fixed; bottom: 24px; right: 24px;
+  padding: 10px 20px; background: var(--accent); color: white;
+  border-radius: var(--radius-sm); font-size: 13px;
+  box-shadow: var(--shadow-lg);
+  opacity: 0; transform: translateY(10px); transition: 0.3s ease;
+  z-index: 999; pointer-events: none;
+}
+.toast.show { opacity: 1; transform: translateY(0); }
+
+/* COLLAPSIBLE */
+.collapsible-header {
+  display: flex; align-items: center; justify-content: space-between;
+  cursor: pointer; padding: 12px 0; user-select: none;
+}
+.collapsible-header:hover .collapsible-title { color: var(--accent); }
+.collapsible-title { font-size: 15px; font-weight: 600; transition: var(--transition); }
+.collapsible-arrow { transition: 0.2s; color: var(--text-muted); }
+.collapsible-arrow.open { transform: rotate(180deg); }
+.collapsible-body { display: none; padding-bottom: 12px; }
+.collapsible-body.open { display: block; }
+.divider { border: none; border-top: 1px solid var(--border-light); margin: 4px 0; }
+.helper-text { font-size: 13px; color: var(--text-secondary); margin: 8px 0; line-height: 1.7; }
+.inline-code {
+  font-family: 'JetBrains Mono', monospace; font-size: 12px;
+  background: var(--bg-code); padding: 2px 6px; border-radius: 3px;
+  border: 1px solid var(--border-light);
+}
+
+/* live preview area in formula editor */
+.live-preview-area {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 24px;
+  min-height: 80px;
+  margin-top: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow-x: auto;
+  position: relative;
+}
+.live-preview-area .katex { font-size: 1.3em; }
+.live-preview-area .katex-display { margin: 0; }
+
+/* two pane (code + preview) */
+.two-pane {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin: 8px 0;
+}
+.two-pane .pane-code {
+  position: relative;
+  background: var(--bg-code);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-sm);
+  padding: 16px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12.5px; line-height: 1.65;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-break: break-all;
+  color: var(--text-primary);
+}
+.two-pane .pane-preview {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 20px;
+  overflow-x: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+.two-pane .pane-preview .katex { font-size: 1.1em; }
+.two-pane .pane-preview .katex-display { margin: 0.2em 0; }
+
+@media (max-width: 1000px) {
+  .two-pane { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 900px) {
+  .app { flex-direction: column; padding: 16px; }
+  .sidebar { width: 100%; position: static; display: flex; flex-wrap: wrap; gap: 4px; max-height: none; }
+  .nav-group { margin-bottom: 8px; display: flex; flex-wrap: wrap; gap: 4px; align-items: center; }
+  .nav-group-title { margin-bottom: 0; margin-right: 8px; }
+  .converter-area { grid-template-columns: 1fr; }
+  .header-inner { padding: 0 16px; }
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="header">
+  <div class="header-inner">
+    <div class="logo">
+      <div class="logo-icon">T<sub>x</sub></div>
+      <div>
+        <div class="logo-text">LaTeX 学术论文工具箱</div>
+        <div class="logo-sub">FORMULA · TABLE · TEMPLATE · SYMBOL — 含实时预览</div>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button onclick="exportAll()">📋 导出全部模板</button>
+    </div>
+  </div>
+</header>
+
+<div class="app">
+
+<!-- SIDEBAR -->
+<nav class="sidebar">
+  <div class="nav-group">
+    <div class="nav-group-title">转换工具</div>
+    <div class="nav-item active" data-section="formula"><span class="nav-icon">∑</span>公式编辑器</div>
+    <div class="nav-item" data-section="table-converter"><span class="nav-icon">⊞</span>表格转换器</div>
+  </div>
+  <div class="nav-group">
+    <div class="nav-group-title">符号速查</div>
+    <div class="nav-item" data-section="greek"><span class="nav-icon">α</span>希腊字母</div>
+    <div class="nav-item" data-section="math-symbols"><span class="nav-icon">∀</span>数学符号</div>
+    <div class="nav-item" data-section="arrows"><span class="nav-icon">→</span>箭头符号</div>
+    <div class="nav-item" data-section="decorations"><span class="nav-icon">â</span>字母修饰</div>
+  </div>
+  <div class="nav-group">
+    <div class="nav-group-title">公式模板</div>
+    <div class="nav-item" data-section="formula-tpl"><span class="nav-icon">𝑓</span>常用公式</div>
+    <div class="nav-item" data-section="matrix-tpl"><span class="nav-icon">▦</span>矩阵与数组</div>
+    <div class="nav-item" data-section="env-tpl"><span class="nav-icon">⊏</span>定理与环境</div>
+  </div>
+  <div class="nav-group">
+    <div class="nav-group-title">表格模板</div>
+    <div class="nav-item" data-section="table-tpl"><span class="nav-icon">☰</span>学术表格</div>
+  </div>
+  <div class="nav-group">
+    <div class="nav-group-title">文档模板</div>
+    <div class="nav-item" data-section="doc-tpl"><span class="nav-icon">📄</span>论文框架</div>
+    <div class="nav-item" data-section="bib-tpl"><span class="nav-icon">📚</span>参考文献</div>
+    <div class="nav-item" data-section="figure-tpl"><span class="nav-icon">🖼</span>图片与浮动体</div>
+    <div class="nav-item" data-section="algo-tpl"><span class="nav-icon">⚙</span>算法与代码</div>
+  </div>
+  <div class="nav-group">
+    <div class="nav-group-title">辅助参考</div>
+    <div class="nav-item" data-section="packages"><span class="nav-icon">📦</span>常用宏包</div>
+    <div class="nav-item" data-section="tips"><span class="nav-icon">💡</span>排版技巧</div>
+  </div>
+</nav>
+
+<!-- MAIN -->
+<main class="main">
+
+<!-- ===== 公式编辑器 ===== -->
+<div class="section active" id="formula">
+  <h2 class="section-title">公式编辑器</h2>
+  <p class="section-desc">输入 LaTeX 公式，实时预览渲染效果</p>
+  <div class="card">
+    <div class="card-title">快捷输入面板</div>
+    <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:16px;" id="quick-formula-btns"></div>
+    <div class="converter-area">
+      <div class="converter-panel">
+        <div class="converter-label">输入 LaTeX 公式</div>
+        <textarea class="converter-textarea" id="formula-input" placeholder="例如：E = mc^2" oninput="livePreviewFormula()">E = mc^2</textarea>
+      </div>
+      <div class="converter-panel">
+        <div class="converter-label">输出（带环境包裹）</div>
+        <textarea class="converter-textarea" id="formula-output" readonly></textarea>
+      </div>
+    </div>
+    <div class="converter-actions">
+      <button class="btn btn-primary" onclick="wrapFormula('equation')">equation</button>
+      <button class="btn btn-primary" onclick="wrapFormula('align')">align</button>
+      <button class="btn btn-primary" onclick="wrapFormula('gather')">gather</button>
+      <button class="btn btn-secondary" onclick="wrapFormula('inline')">行内 $...$</button>
+      <button class="btn btn-secondary" onclick="wrapFormula('display')">行间 $$...$$</button>
+      <button class="btn btn-secondary" onclick="copyText(document.getElementById('formula-output').value)">复制结果</button>
+    </div>
+    <div class="live-preview-area" id="formula-live-preview">
+      <span class="preview-label">PREVIEW</span>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 表格转换器 ===== -->
+<div class="section" id="table-converter">
+  <h2 class="section-title">表格转换器</h2>
+  <p class="section-desc">粘贴 CSV / TSV 数据，生成 LaTeX 表格并预览效果</p>
+  <div class="card">
+    <div class="card-title">CSV → LaTeX 表格 <span class="badge">含预览</span></div>
+    <div class="converter-area">
+      <div class="converter-panel">
+        <div class="converter-label">粘贴 CSV / TSV 数据</div>
+        <textarea class="converter-textarea" id="csv-input" placeholder="Method,Accuracy,F1-Score,Params&#10;ResNet-50,76.1,74.8,25.6M&#10;ViT-B/16,81.3,80.5,86.6M&#10;Our Method,83.7,82.9,32.1M">Method,Accuracy,F1-Score,Params
+ResNet-50,76.1,74.8,25.6M
+ViT-B/16,81.3,80.5,86.6M
+Our Method,83.7,82.9,32.1M</textarea>
+      </div>
+      <div class="converter-panel">
+        <div class="converter-label">LaTeX 输出</div>
+        <textarea class="converter-textarea" id="csv-output" readonly></textarea>
+      </div>
+    </div>
+    <div class="converter-actions">
+      <button class="btn btn-primary" onclick="convertCSV('threeline')">三线表</button>
+      <button class="btn btn-primary" onclick="convertCSV('threeline-grouped')">分组三线表</button>
+      <button class="btn btn-primary" onclick="convertCSV('full')">完整线框表</button>
+      <button class="btn btn-secondary" onclick="convertCSV('plain')">无线表格</button>
+      <button class="btn btn-secondary" onclick="copyText(document.getElementById('csv-output').value)">复制结果</button>
+    </div>
+    <div class="converter-label" style="margin-top:16px;">表格预览</div>
+    <div id="csv-table-preview" class="table-preview threeline" style="min-height:60px;background:#fff;border:1px solid var(--border);border-radius:var(--radius-sm);padding:16px;position:relative;">
+      <span class="preview-label">TABLE PREVIEW</span>
+    </div>
+    <p class="helper-text" style="margin-top:10px;">💡 粘贴 Excel 内容（Tab 分隔）也可自动识别。点击转换按钮后表格预览将同步更新。</p>
+  </div>
+</div>
+
+<!-- ===== 希腊字母 ===== -->
+<div class="section" id="greek">
+  <h2 class="section-title">希腊字母</h2>
+  <p class="section-desc">点击即可复制，右侧显示渲染效果</p>
+  <div class="card"><div class="card-title">小写希腊字母</div><div class="symbol-grid" id="greek-lower"></div></div>
+  <div class="card"><div class="card-title">大写希腊字母</div><div class="symbol-grid" id="greek-upper"></div></div>
+  <div class="card"><div class="card-title">变体形式</div><div class="symbol-grid" id="greek-var"></div></div>
+</div>
+
+<!-- ===== 数学符号 ===== -->
+<div class="section" id="math-symbols">
+  <h2 class="section-title">数学符号</h2>
+  <p class="section-desc">涵盖关系运算、集合、逻辑、微积分等常用数学符号，含渲染预览</p>
+  <div class="card">
+    <div class="tabs" id="math-tabs"></div>
+    <div id="math-tab-contents"></div>
+  </div>
+</div>
+
+<!-- ===== 箭头符号 ===== -->
+<div class="section" id="arrows">
+  <h2 class="section-title">箭头符号</h2>
+  <p class="section-desc">各种方向和样式的箭头命令</p>
+  <div class="card"><div class="symbol-grid" id="arrows-grid"></div></div>
+</div>
+
+<!-- ===== 字母修饰 ===== -->
+<div class="section" id="decorations">
+  <h2 class="section-title">字母修饰 / 上标记</h2>
+  <p class="section-desc">修饰命令与数学字体，含渲染效果</p>
+  <div class="card"><div class="card-title">修饰命令</div><div class="symbol-grid" id="deco-grid"></div></div>
+  <div class="card"><div class="card-title">数学字体</div><div class="symbol-grid" id="mathfont-grid"></div></div>
+</div>
+
+<!-- ===== 常用公式模板 ===== -->
+<div class="section" id="formula-tpl">
+  <h2 class="section-title">常用公式模板</h2>
+  <p class="section-desc">左侧代码 · 右侧实时渲染预览 · 点击复制</p>
+  <div id="formula-templates"></div>
+</div>
+
+<!-- ===== 矩阵与数组 ===== -->
+<div class="section" id="matrix-tpl">
+  <h2 class="section-title">矩阵与数组</h2>
+  <p class="section-desc">各类矩阵环境、分段函数、数组模板，含渲染预览</p>
+  <div id="matrix-templates"></div>
+</div>
+
+<!-- ===== 定理与环境 ===== -->
+<div class="section" id="env-tpl">
+  <h2 class="section-title">定理与环境</h2>
+  <p class="section-desc">学术论文常用环境定义模板</p>
+  <div id="env-templates"></div>
+</div>
+
+<!-- ===== 学术表格模板 ===== -->
+<div class="section" id="table-tpl">
+  <h2 class="section-title">学术表格模板</h2>
+  <p class="section-desc">覆盖三线表、分组表、跨页表等，含可视化预览</p>
+  <div id="table-templates"></div>
+</div>
+
+<!-- ===== 论文框架 ===== -->
+<div class="section" id="doc-tpl">
+  <h2 class="section-title">论文框架模板</h2>
+  <p class="section-desc">完整的学术论文文档结构模板</p>
+  <div id="doc-templates"></div>
+</div>
+
+<!-- ===== 参考文献 ===== -->
+<div class="section" id="bib-tpl">
+  <h2 class="section-title">参考文献</h2>
+  <p class="section-desc">BibTeX 条目格式与引用命令参考</p>
+  <div id="bib-templates"></div>
+</div>
+
+<!-- ===== 图片与浮动体 ===== -->
+<div class="section" id="figure-tpl">
+  <h2 class="section-title">图片与浮动体</h2>
+  <p class="section-desc">图片插入、子图并排、图表浮动体模板</p>
+  <div id="figure-templates"></div>
+</div>
+
+<!-- ===== 算法与代码 ===== -->
+<div class="section" id="algo-tpl">
+  <h2 class="section-title">算法与代码</h2>
+  <p class="section-desc">伪代码、代码块排版模板</p>
+  <div id="algo-templates"></div>
+</div>
+
+<!-- ===== 常用宏包 ===== -->
+<div class="section" id="packages">
+  <h2 class="section-title">常用宏包速查</h2>
+  <p class="section-desc">学术论文写作最常用的 LaTeX 宏包</p>
+  <div id="packages-list"></div>
+</div>
+
+<!-- ===== 排版技巧 ===== -->
+<div class="section" id="tips">
+  <h2 class="section-title">排版技巧</h2>
+  <p class="section-desc">论文写作中常见问题与解决方案</p>
+  <div id="tips-list"></div>
+</div>
+
+</main>
+</div>
+
+<div class="toast" id="toast">已复制到剪贴板</div>
+
+<script>
+// ===== WAIT FOR KATEX =====
+let katexReady = false;
+function waitForKatex() {
+  return new Promise(resolve => {
+    if (window.katex) { katexReady = true; resolve(); return; }
+    const iv = setInterval(() => {
+      if (window.katex) { clearInterval(iv); katexReady = true; resolve(); }
+    }, 50);
+    setTimeout(() => { clearInterval(iv); resolve(); }, 5000);
+  });
+}
+
+// ===== RENDER KATEX SAFELY =====
+function renderKatex(latex, el, displayMode = true) {
+  if (!katexReady || !el) return;
+  try {
+    // clean common LaTeX that KaTeX can't handle
+    let clean = latex
+      .replace(/\\label\{[^}]*\}/g, '')
+      .replace(/\\text\{([^}]*)\}/g, '\\text{$1}')
+      .replace(/\\quad\\text\{s\.t\.\}/g, '\\quad\\text{s.t.}')
+      .trim();
+    katex.render(clean, el, {
+      displayMode: displayMode,
+      throwOnError: false,
+      trust: true,
+      strict: false,
+      macros: {
+        '\\R': '\\mathbb{R}',
+        '\\N': '\\mathbb{N}',
+        '\\Z': '\\mathbb{Z}',
+        '\\E': '\\mathbb{E}',
+        '\\Var': '\\mathrm{Var}',
+        '\\dd': '\\mathrm{d}',
+        '\\argmin': '\\operatorname*{arg\\,min}',
+        '\\tr': '\\operatorname{tr}',
+        '\\det': '\\det',
+      }
+    });
+  } catch (e) {
+    el.innerHTML = `<span class="preview-error">⚠ 预览异常: ${escapeHtml(e.message.substring(0,80))}</span>`;
+  }
+}
+
+// ===== NAV =====
+const navItems = document.querySelectorAll('.nav-item');
+const sections = document.querySelectorAll('.section');
+navItems.forEach(item => {
+  item.addEventListener('click', () => {
+    navItems.forEach(n => n.classList.remove('active'));
+    sections.forEach(s => s.classList.remove('active'));
+    item.classList.add('active');
+    document.getElementById(item.dataset.section).classList.add('active');
+  });
+});
+
+// ===== TOAST =====
+function showToast(msg = '已复制到剪贴板') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 1600);
+}
+
+// ===== COPY =====
+function copyText(text) {
+  if (!text) return;
+  navigator.clipboard.writeText(text).then(() => showToast());
+}
+
+// ===== ESCAPE =====
+function escapeHtml(str) {
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// ===== CODE BLOCK =====
+function codeBlock(code, id) {
+  const eid = id || 'cb_' + Math.random().toString(36).substr(2,8);
+  return `<div class="code-block" id="${eid}"><button class="copy-btn" onclick="copyCodeBlock('${eid}')">复制</button>${escapeHtml(code)}</div>`;
+}
+function copyCodeBlock(id) {
+  const el = document.getElementById(id);
+  const btn = el.querySelector('.copy-btn');
+  const text = el.textContent.replace(/^复制/, '').trim();
+  navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = '已复制 ✓'; btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = '复制'; btn.classList.remove('copied'); }, 1500);
+  });
+}
+
+// ===== TWO-PANE (code + katex preview) =====
+function twoPaneBlock(code, katexStr) {
+  const eid = 'tp_' + Math.random().toString(36).substr(2,8);
+  const pid = 'pr_' + Math.random().toString(36).substr(2,8);
+  // store for deferred rendering
+  pendingRenders.push({ id: pid, latex: katexStr || code });
+  return `<div class="two-pane">
+    <div class="pane-code" id="${eid}"><button class="copy-btn" onclick="copyCodeBlock('${eid}')">复制</button>${escapeHtml(code)}</div>
+    <div class="pane-preview" id="${pid}"><span class="preview-label">PREVIEW</span><span style="color:var(--text-muted);font-size:13px;">渲染中...</span></div>
+  </div>`;
+}
+let pendingRenders = [];
+
+// ===== COLLAPSIBLE =====
+function collapsible(title, content, open = false) {
+  const id = 'col_' + Math.random().toString(36).substr(2,8);
+  return `<div class="collapsible-header" onclick="toggleCollapsible('${id}')">
+    <span class="collapsible-title">${title}</span>
+    <span class="collapsible-arrow ${open?'open':''}" id="${id}_arrow">▼</span>
+  </div>
+  <div class="collapsible-body ${open?'open':''}" id="${id}">${content}</div><hr class="divider">`;
+}
+function toggleCollapsible(id) {
+  document.getElementById(id).classList.toggle('open');
+  document.getElementById(id+'_arrow').classList.toggle('open');
+}
+
+// ===== SYMBOL GRID WITH KATEX PREVIEW =====
+function buildSymbolGrid(containerId, items) {
+  const container = document.getElementById(containerId);
+  container.innerHTML = items.map(([cmd, label]) => {
+    const pid = 'sp_' + Math.random().toString(36).substr(2,8);
+    // determine the katex string to render
+    let katexCmd = cmd;
+    // strip incomplete constructs for preview
+    if (katexCmd.includes('\\left') && katexCmd.includes('\\right')) {
+      // keep as is
+    }
+    pendingRenders.push({ id: pid, latex: katexCmd, display: false });
+    return `<div class="symbol-item" onclick="copyText('${cmd.replace(/'/g,"\\'")}')">
+      <span class="sym-preview" id="${pid}"></span>
+      <span class="sym">${escapeHtml(cmd)}</span>
+    </div>`;
+  }).join('');
+}
+
+// ===== FORMULA EDITOR =====
+const quickBtns = [
+  ['\\frac{a}{b}','a/b'],['\\sqrt{x}','√x'],['\\sqrt[n]{x}','ⁿ√x'],
+  ['x^{n}','xⁿ'],['x_{i}','xᵢ'],['\\int_{a}^{b}','∫'],['\\sum_{i=1}^{n}','∑'],
+  ['\\prod_{i=1}^{n}','∏'],['\\lim_{x\\to\\infty}','lim'],['\\partial','∂'],
+  ['\\nabla','∇'],['\\infty','∞'],['\\cdot','·'],['\\times','×'],['\\div','÷'],
+  ['\\pm','±'],['\\leq','≤'],['\\geq','≥'],['\\neq','≠'],['\\approx','≈'],
+  ['\\equiv','≡'],['\\forall','∀'],['\\exists','∃'],['\\in','∈'],['\\subset','⊂'],
+  ['\\cup','∪'],['\\cap','∩'],['\\emptyset','∅'],['\\mathbb{R}','ℝ'],
+  ['\\left( \\right)','( )'],['\\left[ \\right]','[ ]'],['\\left\\{ \\right\\}','{ }'],
+  ['\\hat{x}','x̂'],['\\bar{x}','x̄'],['\\vec{x}','x⃗'],['\\dot{x}','ẋ'],
+  ['\\tilde{x}','x̃'],['\\overline{AB}','A̅B̅'],
+  ['\\underbrace{x}_{\\text{下}}','下括号'],['\\overbrace{x}^{\\text{上}}','上括号'],
+  ['\\text{}','text'],['\\mathrm{}','roman'],['\\boldsymbol{}','bold'],
+];
+document.getElementById('quick-formula-btns').innerHTML = quickBtns.map(([cmd, label]) =>
+  `<button class="btn btn-secondary" style="padding:4px 10px;font-size:12px;" onclick="insertFormula(\`${cmd.replace(/`/g,'\\`')}\`)" title="${escapeHtml(cmd)}">${label}</button>`
+).join('');
+
+function insertFormula(text) {
+  const ta = document.getElementById('formula-input');
+  const s = ta.selectionStart, e = ta.selectionEnd;
+  ta.value = ta.value.substring(0,s) + text + ta.value.substring(e);
+  ta.focus();
+  ta.selectionStart = ta.selectionEnd = s + text.length;
+  livePreviewFormula();
+}
+function wrapFormula(type) {
+  const input = document.getElementById('formula-input').value.trim();
+  if (!input) return;
+  let result = '';
+  switch (type) {
+    case 'equation': result = `\\begin{equation}\n  ${input}\n  \\label{eq:label}\n\\end{equation}`; break;
+    case 'align': result = `\\begin{align}\n  ${input.split('\n').join(' \\\\\n  ')}\n  \\label{eq:label}\n\\end{align}`; break;
+    case 'gather': result = `\\begin{gather}\n  ${input.split('\n').join(' \\\\\n  ')}\n  \\label{eq:label}\n\\end{gather}`; break;
+    case 'inline': result = `$${input}$`; break;
+    case 'display': result = `\\[\n  ${input}\n\\]`; break;
+  }
+  document.getElementById('formula-output').value = result;
+  livePreviewFormula();
+}
+function livePreviewFormula() {
+  const input = document.getElementById('formula-input').value.trim();
+  const el = document.getElementById('formula-live-preview');
+  if (!input) { el.innerHTML = '<span class="preview-label">PREVIEW</span><span style="color:var(--text-muted)">在上方输入公式查看实时预览</span>'; return; }
+  el.innerHTML = '<span class="preview-label">PREVIEW</span>';
+  const container = document.createElement('div');
+  el.appendChild(container);
+  renderKatex(input, container, true);
+}
+
+// ===== TABLE CONVERTER =====
+function parseCSV(text) {
+  const lines = text.trim().split('\n').map(l => l.trim()).filter(l => l);
+  if (!lines.length) return [];
+  const delim = lines[0].includes('\t') ? '\t' : ',';
+  return lines.map(l => l.split(delim).map(c => c.trim()));
+}
+function convertCSV(style) {
+  const input = document.getElementById('csv-input').value;
+  const rows = parseCSV(input);
+  if (rows.length < 1) return;
+  const numCols = Math.max(...rows.map(r => r.length));
+  let result = '';
+  if (style === 'threeline') {
+    const align = 'l' + 'c'.repeat(numCols - 1);
+    result = `\\begin{table}[htbp]\n  \\centering\n  \\caption{表格标题}\n  \\label{tab:label}\n  \\begin{tabular}{${align}}\n    \\toprule\n`;
+    rows.forEach((row, i) => {
+      const padded = [...row, ...Array(numCols - row.length).fill('')];
+      result += '    ' + padded.join(' & ') + ' \\\\\n';
+      if (i === 0) result += '    \\midrule\n';
+    });
+    result += '    \\bottomrule\n  \\end{tabular}\n\\end{table}';
+    renderTablePreview(rows, 'threeline');
+  } else if (style === 'threeline-grouped') {
+    const header = rows[0]; const metricCols = header.slice(1);
+    const align = 'l' + 'c'.repeat(metricCols.length);
+    result = `\\begin{table}[htbp]\n  \\centering\n  \\caption{表格标题}\n  \\label{tab:label}\n  \\begin{tabular}{${align}}\n    \\toprule\n`;
+    result += `    ${header[0]} & ${metricCols.join(' & ')} \\\\\n    \\midrule\n`;
+    for (let i = 1; i < rows.length; i++) {
+      const padded = [...rows[i], ...Array(numCols - rows[i].length).fill('')];
+      result += '    ' + padded.join(' & ') + ' \\\\\n';
+    }
+    result += '    \\bottomrule\n  \\end{tabular}\n\\end{table}';
+    renderTablePreview(rows, 'threeline');
+  } else if (style === 'full') {
+    const align = '|' + Array(numCols).fill('c').join('|') + '|';
+    result = `\\begin{table}[htbp]\n  \\centering\n  \\caption{表格标题}\n  \\label{tab:label}\n  \\begin{tabular}{${align}}\n    \\hline\n`;
+    rows.forEach(row => {
+      const padded = [...row, ...Array(numCols - row.length).fill('')];
+      result += '    ' + padded.join(' & ') + ' \\\\\n    \\hline\n';
+    });
+    result += '  \\end{tabular}\n\\end{table}';
+    renderTablePreview(rows, 'full-border');
+  } else {
+    const align = 'l' + 'c'.repeat(numCols - 1);
+    result = `\\begin{table}[htbp]\n  \\centering\n  \\caption{表格标题}\n  \\label{tab:label}\n  \\begin{tabular}{${align}}\n`;
+    rows.forEach(row => {
+      const padded = [...row, ...Array(numCols - row.length).fill('')];
+      result += '    ' + padded.join(' & ') + ' \\\\\n';
+    });
+    result += '  \\end{tabular}\n\\end{table}';
+    renderTablePreview(rows, 'threeline');
+  }
+  document.getElementById('csv-output').value = result;
+}
+function renderTablePreview(rows, style) {
+  const container = document.getElementById('csv-table-preview');
+  container.className = 'table-preview ' + style;
+  container.style.cssText = 'min-height:60px;background:#fff;border:1px solid var(--border);border-radius:var(--radius-sm);padding:16px;position:relative;';
+  let html = '<span class="preview-label">TABLE PREVIEW</span><table><thead><tr>';
+  if (rows.length > 0) {
+    rows[0].forEach(cell => { html += `<th>${escapeHtml(cell)}</th>`; });
+    html += '</tr></thead><tbody>';
+    for (let i = 1; i < rows.length; i++) {
+      html += '<tr>';
+      rows[i].forEach(cell => { html += `<td>${escapeHtml(cell)}</td>`; });
+      html += '</tr>';
+    }
+    html += '</tbody></table>';
+  }
+  container.innerHTML = html;
+}
+
+// ===== BUILD TABLE HTML PREVIEW FROM STATIC DATA =====
+function staticTablePreview(data, options = {}) {
+  const { style = 'threeline', groupHeaders, groupSep, highlightLast, indentRows, boldCells } = options;
+  let html = `<div class="table-preview ${style}" style="margin:10px 0;background:#fff;border:1px solid var(--border);border-radius:var(--radius-sm);padding:16px;position:relative;">`;
+  html += '<span class="preview-label">TABLE PREVIEW</span><table>';
+
+  if (groupHeaders) {
+    html += '<thead>';
+    // multi-level header
+    groupHeaders.forEach(headerRow => {
+      html += '<tr>';
+      headerRow.forEach(h => {
+        const colspan = h.colspan || 1;
+        const cls = h.isSub ? 'multicolumn-header' : '';
+        html += `<th colspan="${colspan}" class="${cls}">${h.text}</th>`;
+      });
+      html += '</tr>';
+    });
+    html += '</thead>';
+  } else if (data.length > 0) {
+    html += '<thead><tr>';
+    data[0].forEach(cell => { html += `<th>${cell}</th>`; });
+    html += '</tr></thead>';
+  }
+
+  html += '<tbody>';
+  const startIdx = groupHeaders ? 0 : 1;
+  for (let i = startIdx; i < data.length; i++) {
+    const row = data[i];
+    const isHL = highlightLast && i === data.length - 1;
+    const isGroupRow = groupSep && groupSep.includes(i);
+    let cls = '';
+    if (isHL) cls += ' highlight-row';
+    if (isGroupRow) cls += ' group-separator';
+    if (row._isGroupHeader) {
+      html += `<tr><td colspan="${row.cols}" class="group-header">${row.text}</td></tr>`;
+      continue;
+    }
+    html += `<tr class="${cls}">`;
+    row.forEach((cell, ci) => {
+      const indent = indentRows && indentRows.includes(i) && ci === 0;
+      const bold = boldCells && boldCells.some(b => b[0] === i && b[1] === ci);
+      let tdCls = '';
+      if (indent) tdCls += ' indent-cell';
+      if (bold) tdCls += ' bold-cell';
+      html += `<td class="${tdCls}">${cell}</td>`;
+    });
+    html += '</tr>';
+  }
+  html += '</tbody></table></div>';
+  return html;
+}
+
+// ===== GREEK LETTERS =====
+buildSymbolGrid('greek-lower', [
+  ['\\alpha','α'],['\\beta','β'],['\\gamma','γ'],['\\delta','δ'],
+  ['\\epsilon','ε'],['\\zeta','ζ'],['\\eta','η'],['\\theta','θ'],
+  ['\\iota','ι'],['\\kappa','κ'],['\\lambda','λ'],['\\mu','μ'],
+  ['\\nu','ν'],['\\xi','ξ'],['\\pi','π'],['\\rho','ρ'],
+  ['\\sigma','σ'],['\\tau','τ'],['\\upsilon','υ'],['\\phi','ϕ'],
+  ['\\chi','χ'],['\\psi','ψ'],['\\omega','ω'],
+]);
+buildSymbolGrid('greek-upper', [
+  ['\\Gamma','Γ'],['\\Delta','Δ'],['\\Theta','Θ'],['\\Lambda','Λ'],
+  ['\\Xi','Ξ'],['\\Pi','Π'],['\\Sigma','Σ'],['\\Upsilon','Υ'],
+  ['\\Phi','Φ'],['\\Psi','Ψ'],['\\Omega','Ω'],
+]);
+buildSymbolGrid('greek-var', [
+  ['\\varepsilon','ε var'],['\\vartheta','ϑ var'],['\\varpi','ϖ var'],
+  ['\\varrho','ϱ var'],['\\varsigma','ς var'],['\\varphi','φ var'],
+]);
+
+// ===== MATH SYMBOLS =====
+const mathGroups = {
+  '关系运算': [
+    ['\\leq','≤'],['\\geq','≥'],['\\neq','≠'],['\\approx','≈'],['\\equiv','≡'],
+    ['\\sim','∼'],['\\simeq','≃'],['\\cong','≅'],['\\propto','∝'],['\\ll','≪'],
+    ['\\gg','≫'],['\\prec','≺'],['\\succ','≻'],['\\preceq','⪯'],['\\succeq','⪰'],
+    ['\\perp','⊥'],['\\parallel','∥'],['\\mid','∣'],
+  ],
+  '二元运算': [
+    ['\\pm','±'],['\\mp','∓'],['\\times','×'],['\\div','÷'],['\\cdot','·'],
+    ['\\star','⋆'],['\\circ','∘'],['\\bullet','•'],['\\oplus','⊕'],['\\otimes','⊗'],
+    ['\\odot','⊙'],['\\ominus','⊖'],['\\wedge','∧'],['\\vee','∨'],['\\cap','∩'],['\\cup','∪'],['\\setminus','∖'],
+  ],
+  '集合与逻辑': [
+    ['\\in','∈'],['\\notin','∉'],['\\ni','∋'],['\\subset','⊂'],['\\supset','⊃'],
+    ['\\subseteq','⊆'],['\\supseteq','⊇'],['\\emptyset','∅'],
+    ['\\forall','∀'],['\\exists','∃'],['\\neg','¬'],
+    ['\\land','∧'],['\\lor','∨'],['\\Rightarrow','⇒'],['\\Leftrightarrow','⇔'],
+    ['\\implies','⟹'],['\\iff','⟺'],['\\therefore','∴'],['\\because','∵'],
+  ],
+  '大型运算': [
+    ['\\sum','∑'],['\\prod','∏'],['\\coprod','∐'],['\\int','∫'],['\\iint','∬'],
+    ['\\iiint','∭'],['\\oint','∮'],['\\bigcup','⋃'],['\\bigcap','⋂'],
+    ['\\bigoplus','⨁'],['\\bigotimes','⨂'],['\\bigvee','⋁'],['\\bigwedge','⋀'],
+  ],
+  '微积分': [
+    ['\\partial','∂'],['\\nabla','∇'],['\\infty','∞'],
+    ['\\frac{\\mathrm{d}}{\\mathrm{d}x}','d/dx'],
+    ['\\frac{\\partial}{\\partial x}','∂/∂x'],
+    ['\\int_{a}^{b}','∫ab'],['\\lim_{x \\to 0}','lim→0'],
+    ['\\sum_{n=0}^{\\infty}','∑∞'],
+  ],
+  '定界符': [
+    ['\\left( \\right)','( )'],['\\left[ \\right]','[ ]'],['\\left\\{ \\right\\}','{ }'],
+    ['\\left| \\right|','| |'],['\\left\\| \\right\\|','‖ ‖'],
+    ['\\left\\langle \\right\\rangle','⟨ ⟩'],
+    ['\\left\\lfloor \\right\\rfloor','⌊ ⌋'],['\\left\\lceil \\right\\rceil','⌈ ⌉'],
+  ],
+};
+const mathTabsEl = document.getElementById('math-tabs');
+const mathContentsEl = document.getElementById('math-tab-contents');
+let firstMath = true;
+Object.keys(mathGroups).forEach(group => {
+  const gid = 'mg_' + Math.random().toString(36).substr(2,6);
+  mathTabsEl.innerHTML += `<button class="tab ${firstMath?'active':''}" onclick="switchMathTab('${gid}',this)">${group}</button>`;
+  const items = mathGroups[group];
+  let gridHtml = '';
+  items.forEach(([cmd, label]) => {
+    const pid = 'sp_' + Math.random().toString(36).substr(2,8);
+    pendingRenders.push({ id: pid, latex: cmd, display: false });
+    gridHtml += `<div class="symbol-item" onclick="copyText('${cmd.replace(/'/g,"\\'")}')">
+      <span class="sym-preview" id="${pid}"></span>
+      <span class="sym">${escapeHtml(cmd)}</span>
+    </div>`;
+  });
+  mathContentsEl.innerHTML += `<div class="tab-content ${firstMath?'active':''}" id="${gid}"><div class="symbol-grid">${gridHtml}</div></div>`;
+  firstMath = false;
+});
+function switchMathTab(id, btn) {
+  mathContentsEl.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+  mathTabsEl.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  btn.classList.add('active');
+}
+
+// ===== ARROWS =====
+buildSymbolGrid('arrows-grid', [
+  ['\\leftarrow','←'],['\\rightarrow','→'],['\\uparrow','↑'],['\\downarrow','↓'],
+  ['\\leftrightarrow','↔'],['\\Leftarrow','⇐'],['\\Rightarrow','⇒'],
+  ['\\Leftrightarrow','⇔'],['\\longrightarrow','⟶'],['\\Longrightarrow','⟹'],
+  ['\\longleftrightarrow','⟷'],['\\Longleftrightarrow','⟺'],
+  ['\\mapsto','↦'],['\\longmapsto','⟼'],
+  ['\\hookrightarrow','↪'],['\\hookleftarrow','↩'],
+  ['\\nearrow','↗'],['\\searrow','↘'],['\\swarrow','↙'],['\\nwarrow','↖'],
+  ['\\rightharpoonup','⇀'],['\\rightleftharpoons','⇌'],
+]);
+
+// ===== DECORATIONS =====
+buildSymbolGrid('deco-grid', [
+  ['\\hat{a}','帽子'],['\\check{a}','抑扬'],['\\tilde{a}','波浪'],
+  ['\\acute{a}','锐音'],['\\grave{a}','重音'],['\\dot{a}','单点'],
+  ['\\ddot{a}','双点'],['\\breve{a}','短音'],['\\bar{a}','横线'],
+  ['\\vec{a}','向量'],['\\mathring{a}','圆圈'],
+  ['\\widehat{abc}','宽帽子'],['\\widetilde{abc}','宽波浪'],
+  ['\\overline{abc}','上横线'],['\\underline{abc}','下横线'],
+  ['\\overrightarrow{AB}','上右箭头'],['\\overleftarrow{AB}','上左箭头'],
+  ['\\overbrace{abc}^{n}','上花括号'],['\\underbrace{abc}_{n}','下花括号'],
+]);
+buildSymbolGrid('mathfont-grid', [
+  ['\\mathrm{ABCabc}','罗马体'],['\\mathit{ABCabc}','斜体'],
+  ['\\mathbf{ABCabc}','粗体'],['\\mathsf{ABCabc}','无衬线'],
+  ['\\mathtt{ABCabc}','等宽'],['\\mathcal{ABC}','花体'],
+  ['\\mathbb{ABC}','黑板粗体'],['\\mathfrak{ABC}','哥特体'],
+  ['\\boldsymbol{\\alpha}','粗符号'],
+]);
+
+// ===== FORMULA TEMPLATES (two-pane: code + preview) =====
+const formulaTemplates = [
+  { title: '分式', code: '\\frac{a}{b}, \\quad \\dfrac{a}{b}, \\quad \\cfrac{1}{1+\\cfrac{1}{1+x}}' },
+  { title: '根号', code: '\\sqrt{x}, \\quad \\sqrt[3]{x}, \\quad \\sqrt[n]{x^2 + y^2}' },
+  { title: '上下标', code: 'x^{2}, \\quad x_{i}, \\quad x_{i}^{2}, \\quad {}_a^b X_c^d' },
+  { title: '求和', code: '\\sum_{i=1}^{n} x_i, \\quad \\sum_{\\substack{i=1 \\\\ i \\neq j}}^{n} a_{ij}' },
+  { title: '积分', code: '\\int_{a}^{b} f(x) \\, \\mathrm{d}x, \\quad \\iint_{D} f(x,y) \\, \\mathrm{d}x\\mathrm{d}y' },
+  { title: '极限', code: '\\lim_{x \\to \\infty} f(x) = L, \\quad \\lim_{n \\to \\infty} \\left(1 + \\frac{1}{n}\\right)^n = e' },
+  { title: '导数', code: "f'(x), \\quad f''(x), \\quad \\frac{\\mathrm{d}y}{\\mathrm{d}x}, \\quad \\frac{\\partial f}{\\partial x}" },
+  { title: '概率与期望（贝叶斯公式）', code: 'P(A|B) = \\frac{P(B|A)P(A)}{P(B)}, \\quad \\mathbb{E}[X] = \\sum_{i} x_i p_i' },
+  { title: '范数与内积', code: '\\|x\\|_2, \\quad \\|A\\|_F, \\quad \\langle x, y \\rangle' },
+  { title: '组合数', code: '\\binom{n}{k} = \\frac{n!}{k!(n-k)!}' },
+  { title: '三角函数', code: '\\sin\\theta, \\quad \\cos\\theta, \\quad \\tan\\theta, \\quad \\arcsin x' },
+  { title: '向量与矩阵运算', code: '\\vec{v}, \\quad \\mathbf{A}^{\\top}, \\quad \\mathbf{A}^{-1}, \\quad \\det(\\mathbf{A}), \\quad \\operatorname{tr}(\\mathbf{A})' },
+  { title: '最优化', code: '\\min_{\\mathbf{x}} f(\\mathbf{x}) \\quad \\text{s.t.} \\quad g(\\mathbf{x}) \\leq 0' },
+  { title: '梯度与散度', code: '\\nabla f, \\quad \\nabla^2 f, \\quad \\nabla \\cdot \\mathbf{F}, \\quad \\nabla \\times \\mathbf{F}' },
+  { title: '泰勒展开', code: 'f(x) = \\sum_{n=0}^{\\infty} \\frac{f^{(n)}(a)}{n!}(x-a)^n' },
+  { title: '傅里叶变换', code: '\\hat{f}(\\xi) = \\int_{-\\infty}^{\\infty} f(x) e^{-2\\pi i \\xi x} \\, \\mathrm{d}x' },
+  { title: '高斯分布', code: 'p(x) = \\frac{1}{\\sigma\\sqrt{2\\pi}} \\exp\\left(-\\frac{(x-\\mu)^2}{2\\sigma^2}\\right)' },
+  { title: 'Softmax', code: '\\mathrm{softmax}(z_i) = \\frac{e^{z_i}}{\\sum_{j=1}^{K} e^{z_j}}' },
+  { title: '交叉熵损失', code: '\\mathcal{L} = -\\sum_{i=1}^{C} y_i \\log(\\hat{y}_i)' },
+  { title: 'KL 散度', code: 'D_{\\mathrm{KL}}(P \\| Q) = \\sum_{x} P(x) \\log \\frac{P(x)}{Q(x)}' },
+  { title: '注意力机制', code: '\\mathrm{Attention}(Q,K,V) = \\mathrm{softmax}\\left(\\frac{QK^\\top}{\\sqrt{d_k}}\\right)V' },
+];
+document.getElementById('formula-templates').innerHTML = formulaTemplates.map(t =>
+  `<div class="card"><div class="card-title">${t.title}</div>${twoPaneBlock(t.code)}</div>`
+).join('');
+
+// ===== MATRIX TEMPLATES =====
+const matrixTemplates = [
+  { title: '圆括号矩阵 pmatrix', code: `\\begin{pmatrix} a_{11} & a_{12} & a_{13} \\\\ a_{21} & a_{22} & a_{23} \\\\ a_{31} & a_{32} & a_{33} \\end{pmatrix}` },
+  { title: '方括号矩阵 bmatrix', code: `\\begin{bmatrix} 1 & 0 & 0 \\\\ 0 & 1 & 0 \\\\ 0 & 0 & 1 \\end{bmatrix}` },
+  { title: '行列式 vmatrix', code: `\\begin{vmatrix} a & b \\\\ c & d \\end{vmatrix} = ad - bc` },
+  { title: '省略号矩阵', code: `\\begin{pmatrix} a_{11} & a_{12} & \\cdots & a_{1n} \\\\ a_{21} & a_{22} & \\cdots & a_{2n} \\\\ \\vdots & \\vdots & \\ddots & \\vdots \\\\ a_{m1} & a_{m2} & \\cdots & a_{mn} \\end{pmatrix}` },
+  { title: '分段函数 cases', code: `f(x) = \\begin{cases} x^2, & \\text{if } x \\geq 0 \\\\ -x^2, & \\text{if } x < 0 \\end{cases}` },
+  { title: '方程组 cases', code: `\\begin{cases} 3x + 5y + z = 0 \\\\ 7x - 2y + 4z = 1 \\\\ -6x + 3y + 2z = 5 \\end{cases}` },
+  { title: '多行对齐 aligned', code: `\\begin{aligned} f(x) &= (x+1)^2 \\\\ &= x^2 + 2x + 1 \\end{aligned}` },
+  { title: '小矩阵 smallmatrix', code: `\\left(\\begin{smallmatrix} a & b \\\\ c & d \\end{smallmatrix}\\right)` },
+  { title: '增广矩阵 array', code: `\\left(\\begin{array}{ccc|c} 1 & 0 & 2 & 3 \\\\ 0 & 1 & -1 & 2 \\\\ 0 & 0 & 0 & 0 \\end{array}\\right)` },
+  { title: '旋转矩阵', code: `\\begin{pmatrix} \\cos\\theta & -\\sin\\theta \\\\ \\sin\\theta & \\cos\\theta \\end{pmatrix}` },
+];
+document.getElementById('matrix-templates').innerHTML = matrixTemplates.map(t =>
+  `<div class="card"><div class="card-title">${t.title}</div>${twoPaneBlock(t.code)}</div>`
+).join('');
+
+// ===== ENV TEMPLATES (code only, no math preview needed) =====
+const envTemplates = [
+  { title: '定理环境定义（amsthm）', code: `% 在导言区添加\n\\usepackage{amsthm}\n\n\\newtheorem{theorem}{Theorem}[section]\n\\newtheorem{lemma}[theorem]{Lemma}\n\\newtheorem{proposition}[theorem]{Proposition}\n\\newtheorem{corollary}[theorem]{Corollary}\n\\newtheorem{definition}{Definition}[section]\n\\newtheorem{example}{Example}[section]\n\\newtheorem{remark}{Remark}[section]\n\\newtheorem{assumption}{Assumption}` },
+  { title: '定理使用示例', code: `\\begin{theorem}[Pythagorean Theorem]\n  For a right triangle with legs $a$, $b$ and hypotenuse $c$,\n  \\begin{equation}\n    a^2 + b^2 = c^2.\n  \\end{equation}\n\\end{theorem}\n\n\\begin{proof}\n  The proof is left as an exercise.\n\\end{proof}` },
+  { title: '定义环境', code: `\\begin{definition}[Metric Space]\n  A metric space is $(M, d)$ where $d: M \\times M \\to \\mathbb{R}$:\n  \\begin{enumerate}\n    \\item $d(x,y) \\geq 0$\n    \\item $d(x,y) = 0 \\iff x = y$\n    \\item $d(x,y) = d(y,x)$\n    \\item $d(x,z) \\leq d(x,y) + d(y,z)$\n  \\end{enumerate}\n\\end{definition}` },
+  { title: '交叉引用', code: `Equation~\\eqref{eq:label}\nFigure~\\ref{fig:label}\nTable~\\ref{tab:label}\nSection~\\ref{sec:method}\n\n% cleveref 智能引用:\n\\cref{fig:a}     % → Figure 1\n\\cref{eq:energy} % → Equation (3)` },
+  { title: '列表环境', code: `% 无序\n\\begin{itemize}\n  \\item First\n  \\item Second\n\\end{itemize}\n\n% 有序\n\\begin{enumerate}\n  \\item First\n  \\item Second\n\\end{enumerate}` },
+  { title: '脚注', code: `This sentence has a footnote\\footnote{Footnote text here.}.` },
+];
+document.getElementById('env-templates').innerHTML = envTemplates.map(t =>
+  `<div class="card">${collapsible(t.title, codeBlock(t.code), false)}</div>`
+).join('');
+
+// ===== TABLE TEMPLATES WITH HTML PREVIEW =====
+const tableTemplates = [
+  { title: '标准三线表（booktabs）', tag: '最常用',
+    code: `\\begin{table}[htbp]\n  \\centering\n  \\caption{实验结果对比}\n  \\label{tab:results}\n  \\begin{tabular}{lccc}\n    \\toprule\n    Method & Accuracy & Precision & Recall \\\\\n    \\midrule\n    Baseline      & 72.3 & 70.1 & 68.5 \\\\\n    Method A      & 78.6 & 76.4 & 75.2 \\\\\n    Method B      & 81.2 & 79.8 & 78.1 \\\\\n    \\textbf{Ours} & \\textbf{85.4} & \\textbf{83.7} & \\textbf{82.9} \\\\\n    \\bottomrule\n  \\end{tabular}\n\\end{table}`,
+    preview: () => staticTablePreview([
+      ['Method','Accuracy','Precision','Recall'],
+      ['Baseline','72.3','70.1','68.5'],
+      ['Method A','78.6','76.4','75.2'],
+      ['Method B','81.2','79.8','78.1'],
+      ['<b>Ours</b>','<b>85.4</b>','<b>83.7</b>','<b>82.9</b>'],
+    ], { style:'threeline', highlightLast:true })
+  },
+  { title: '两列分组三线表（cmidrule）', tag: '常用',
+    code: `\\begin{table}[htbp]\n  \\centering\n  \\caption{不同数据集上的性能}\n  \\label{tab:grouped}\n  \\begin{tabular}{lcccc}\n    \\toprule\n    \\multirow{2}{*}{Method} & \\multicolumn{2}{c}{Dataset A} & \\multicolumn{2}{c}{Dataset B} \\\\\n    \\cmidrule(lr){2-3} \\cmidrule(lr){4-5}\n     & Acc. & F1 & Acc. & F1 \\\\\n    \\midrule\n    Baseline      & 72.3 & 70.1 & 68.5 & 66.2 \\\\\n    Method A      & 78.6 & 76.4 & 75.2 & 73.1 \\\\\n    \\textbf{Ours} & \\textbf{85.4} & \\textbf{83.7} & \\textbf{82.9} & \\textbf{81.3} \\\\\n    \\bottomrule\n  \\end{tabular}\n\\end{table}\n% 需要: \\usepackage{booktabs, multirow}`,
+    preview: () => staticTablePreview([
+      ['Baseline','72.3','70.1','68.5','66.2'],
+      ['Method A','78.6','76.4','75.2','73.1'],
+      ['<b>Ours</b>','<b>85.4</b>','<b>83.7</b>','<b>82.9</b>','<b>81.3</b>'],
+    ], { style:'threeline', highlightLast:true, groupHeaders:[
+      [{text:'Method',colspan:1},{text:'Dataset A',colspan:2,isSub:true},{text:'Dataset B',colspan:2,isSub:true}],
+      [{text:''},{text:'Acc.'},{text:'F1'},{text:'Acc.'},{text:'F1'}],
+    ]})
+  },
+  { title: '消融实验表（行分组 midrule）', tag: '对比',
+    code: `\\begin{table}[htbp]\n  \\centering\n  \\caption{消融实验}\n  \\label{tab:ablation}\n  \\begin{tabular}{lcccc}\n    \\toprule\n    Configuration & Acc. & Prec. & Rec. & F1 \\\\\n    \\midrule\n    \\multicolumn{5}{l}{\\textit{Backbone comparison}} \\\\\n    \\quad ResNet-50  & 76.1 & 74.8 & 73.2 & 74.0 \\\\\n    \\quad ResNet-101 & 78.3 & 77.1 & 75.5 & 76.3 \\\\\n    \\midrule\n    \\multicolumn{5}{l}{\\textit{Module ablation}} \\\\\n    \\quad w/o Module A & 80.2 & 78.9 & 77.4 & 78.1 \\\\\n    \\quad w/o Module B & 79.5 & 78.1 & 76.8 & 77.4 \\\\\n    \\quad Full Model   & \\textbf{85.4} & \\textbf{83.7} & \\textbf{82.9} & \\textbf{83.3} \\\\\n    \\bottomrule\n  \\end{tabular}\n\\end{table}`,
+    preview: () => {
+      let data = [
+        ['Configuration','Acc.','Prec.','Rec.','F1'],
+        {_isGroupHeader:true, text:'<i>Backbone comparison</i>', cols:5},
+        ['　ResNet-50','76.1','74.8','73.2','74.0'],
+        ['　ResNet-101','78.3','77.1','75.5','76.3'],
+        {_isGroupHeader:true, text:'<i>Module ablation</i>', cols:5},
+        ['　w/o Module A','80.2','78.9','77.4','78.1'],
+        ['　w/o Module B','79.5','78.1','76.8','77.4'],
+        ['　<b>Full Model</b>','<b>85.4</b>','<b>83.7</b>','<b>82.9</b>','<b>83.3</b>'],
+      ];
+      return staticTablePreview(data, {style:'threeline', highlightLast:true});
+    }
+  },
+  { title: '带标准差的结果表', tag: '实验',
+    code: `\\begin{table}[htbp]\n  \\centering\n  \\caption{多次实验结果（均值 ± 标准差）}\n  \\label{tab:std}\n  \\begin{tabular}{lcc}\n    \\toprule\n    Method & Accuracy (\\%) & F1 Score (\\%) \\\\\n    \\midrule\n    Baseline      & 72.3 $\\pm$ 1.2 & 70.1 $\\pm$ 1.5 \\\\\n    Method A      & 78.6 $\\pm$ 0.8 & 76.4 $\\pm$ 0.9 \\\\\n    \\textbf{Ours} & \\textbf{85.4 $\\pm$ 0.5} & \\textbf{83.7 $\\pm$ 0.6} \\\\\n    \\bottomrule\n  \\end{tabular}\n\\end{table}`,
+    preview: () => staticTablePreview([
+      ['Method','Accuracy (%)','F1 Score (%)'],
+      ['Baseline','72.3 ± 1.2','70.1 ± 1.5'],
+      ['Method A','78.6 ± 0.8','76.4 ± 0.9'],
+      ['<b>Ours</b>','<b>85.4 ± 0.5</b>','<b>83.7 ± 0.6</b>'],
+    ], {style:'threeline', highlightLast:true})
+  },
+  { title: '超参数设置表', tag: '实验',
+    code: `\\begin{table}[htbp]\n  \\centering\n  \\caption{超参数设置}\n  \\label{tab:hyperparams}\n  \\begin{tabular}{ll}\n    \\toprule\n    Hyperparameter & Value \\\\\n    \\midrule\n    Learning rate    & 1e-4 \\\\\n    Batch size       & 32 \\\\\n    Epochs           & 100 \\\\\n    Optimizer        & AdamW \\\\\n    Weight decay     & 1e-2 \\\\\n    Dropout rate     & 0.1 \\\\\n    Hidden dimension & 768 \\\\\n    Attention heads  & 12 \\\\\n    \\bottomrule\n  \\end{tabular}\n\\end{table}`,
+    preview: () => staticTablePreview([
+      ['Hyperparameter','Value'],
+      ['Learning rate','1×10⁻⁴'],['Batch size','32'],['Epochs','100'],
+      ['Optimizer','AdamW'],['Weight decay','1×10⁻²'],['Dropout rate','0.1'],
+      ['Hidden dimension','768'],['Attention heads','12'],
+    ], {style:'threeline'})
+  },
+  { title: '数据集统计表', tag: '数据',
+    code: `\\begin{table}[htbp]\n  \\centering\n  \\caption{数据集统计}\n  \\label{tab:dataset}\n  \\begin{tabular}{lrrrc}\n    \\toprule\n    Dataset & \\#Train & \\#Dev & \\#Test & \\#Classes \\\\\n    \\midrule\n    MNIST       & 60,000  & --     & 10,000 & 10 \\\\\n    CIFAR-10    & 50,000  & --     & 10,000 & 10 \\\\\n    ImageNet    & 1.28M   & 50,000 & 100,000 & 1,000 \\\\\n    \\bottomrule\n  \\end{tabular}\n\\end{table}`,
+    preview: () => staticTablePreview([
+      ['Dataset','#Train','#Dev','#Test','#Classes'],
+      ['MNIST','60,000','—','10,000','10'],
+      ['CIFAR-10','50,000','—','10,000','10'],
+      ['ImageNet','1.28M','50,000','100,000','1,000'],
+    ], {style:'threeline'})
+  },
+  { title: '多行多列合并表格', tag: '高级',
+    code: `% \\usepackage{multirow, booktabs}\n\\begin{table}[htbp]\n  \\centering\n  \\caption{复杂合并表格}\n  \\begin{tabular}{llccc}\n    \\toprule\n    \\multirow{2}{*}{Category} & \\multirow{2}{*}{Method} & \\multicolumn{3}{c}{Metrics} \\\\\n    \\cmidrule(lr){3-5}\n     & & P & R & F1 \\\\\n    \\midrule\n    \\multirow{2}{*}{Supervised}\n     & SVM           & 75.2 & 72.1 & 73.6 \\\\\n     & Random Forest & 78.4 & 76.3 & 77.3 \\\\\n    \\midrule\n    \\multirow{2}{*}{Deep Learning}\n     & CNN           & 82.1 & 80.5 & 81.3 \\\\\n     & Transformer   & \\textbf{88.3} & \\textbf{86.7} & \\textbf{87.5} \\\\\n    \\bottomrule\n  \\end{tabular}\n\\end{table}`,
+    preview: () => staticTablePreview([
+      ['Supervised','SVM','75.2','72.1','73.6'],
+      ['','Random Forest','78.4','76.3','77.3'],
+      ['Deep Learning','CNN','82.1','80.5','81.3'],
+      ['','Transformer','<b>88.3</b>','<b>86.7</b>','<b>87.5</b>'],
+    ], { style:'threeline', groupHeaders:[
+      [{text:'Category'},{text:'Method'},{text:'Metrics',colspan:3,isSub:true}],
+      [{text:''},{text:''},{text:'P'},{text:'R'},{text:'F1'}],
+    ], highlightLast:true})
+  },
+  { title: '跨页长表格（longtable）', tag: '长表',
+    code: `% \\usepackage{longtable, booktabs}\n\\begin{longtable}{lccc}\n  \\caption{完整实验结果} \\label{tab:long} \\\\\n  \\toprule\n  Method & Metric 1 & Metric 2 & Metric 3 \\\\\n  \\midrule\n  \\endfirsthead\n  \\multicolumn{4}{c}{\\tablename\\ \\thetable{} -- 续表} \\\\\n  \\toprule\n  Method & Metric 1 & Metric 2 & Metric 3 \\\\\n  \\midrule\n  \\endhead\n  \\midrule\n  \\multicolumn{4}{r}{\\textit{接下页}} \\\\\n  \\endfoot\n  \\bottomrule\n  \\endlastfoot\n  Row 1 & 1.0 & 2.0 & 3.0 \\\\\n  Row 2 & 4.0 & 5.0 & 6.0 \\\\\n  Row 3 & 7.0 & 8.0 & 9.0 \\\\\n\\end{longtable}`,
+    preview: () => staticTablePreview([
+      ['Method','Metric 1','Metric 2','Metric 3'],
+      ['Row 1','1.0','2.0','3.0'],
+      ['Row 2','4.0','5.0','6.0'],
+      ['Row 3','7.0','8.0','9.0'],
+    ], {style:'threeline'})
+  },
+  { title: '双栏跨栏宽表格（table*）', tag: '双栏',
+    code: `\\begin{table*}[htbp]\n  \\centering\n  \\caption{跨栏宽表格}\n  \\begin{tabular}{lcccccccc}\n    \\toprule\n    Model & BLEU & ROUGE-1 & ROUGE-2 & ROUGE-L & METEOR & CIDEr & BERTScore & Human \\\\\n    \\midrule\n    Baseline & 28.3 & 42.1 & 18.5 & 38.2 & 27.6 & 1.12 & 0.87 & 3.2 \\\\\n    \\textbf{Ours} & \\textbf{35.7} & \\textbf{48.3} & \\textbf{23.1} & \\textbf{44.6} & \\textbf{32.8} & \\textbf{1.45} & \\textbf{0.91} & \\textbf{4.1} \\\\\n    \\bottomrule\n  \\end{tabular}\n\\end{table*}`,
+    preview: () => staticTablePreview([
+      ['Model','BLEU','ROUGE-1','ROUGE-2','ROUGE-L','METEOR','CIDEr','BERTScore','Human'],
+      ['Baseline','28.3','42.1','18.5','38.2','27.6','1.12','0.87','3.2'],
+      ['<b>Ours</b>','<b>35.7</b>','<b>48.3</b>','<b>23.1</b>','<b>44.6</b>','<b>32.8</b>','<b>1.45</b>','<b>0.91</b>','<b>4.1</b>'],
+    ], {style:'threeline', highlightLast:true})
+  },
+  { title: '彩色高亮行表格', tag: '美化',
+    code: `% \\usepackage[table]{xcolor}\n\\begin{table}[htbp]\n  \\centering\n  \\caption{带颜色高亮的表格}\n  \\begin{tabular}{lcc}\n    \\toprule\n    Method & Accuracy & F1 \\\\\n    \\midrule\n    Baseline   & 72.3 & 70.1 \\\\\n    Method A   & 78.6 & 76.4 \\\\\n    \\rowcolor{green!10}\n    \\textbf{Ours} & \\textbf{85.4} & \\textbf{83.7} \\\\\n    \\bottomrule\n  \\end{tabular}\n\\end{table}`,
+    preview: () => staticTablePreview([
+      ['Method','Accuracy','F1'],
+      ['Baseline','72.3','70.1'],
+      ['Method A','78.6','76.4'],
+      ['<b>Ours</b>','<b>85.4</b>','<b>83.7</b>'],
+    ], {style:'threeline', highlightLast:true})
+  },
+];
+document.getElementById('table-templates').innerHTML = tableTemplates.map(t => {
+  const cid = 'tc_' + Math.random().toString(36).substr(2,8);
+  return `<div class="card">
+    <div class="card-title">${t.title} <span class="badge">${t.tag}</span></div>
+    ${t.preview ? t.preview() : ''}
+    ${codeBlock(t.code, cid)}
+  </div>`;
+}).join('');
+
+// ===== DOC / BIB / FIGURE / ALGO TEMPLATES =====
+const docTemplates = [
+  { title: '通用学术论文框架', code: `\\documentclass[12pt, a4paper]{article}\n\\usepackage[utf8]{inputenc}\n\\usepackage[T1]{fontenc}\n\\usepackage{amsmath, amssymb, amsthm}\n\\usepackage{graphicx}\n\\usepackage{booktabs}\n\\usepackage{hyperref}\n\\usepackage[margin=1in]{geometry}\n\\usepackage{natbib}\n\\usepackage{algorithm, algorithmic}\n\\usepackage{subcaption}\n\\usepackage{multirow}\n\\usepackage{xcolor}\n\n\\newtheorem{theorem}{Theorem}[section]\n\\newtheorem{lemma}[theorem]{Lemma}\n\n\\title{Your Paper Title}\n\\author{Author Name\\\\\\texttt{email@university.edu}}\n\\date{\\today}\n\n\\begin{document}\n\\maketitle\n\\begin{abstract}\n  Abstract here.\n\\end{abstract}\n\n\\section{Introduction}\n\\section{Related Work}\n\\section{Method}\n\\section{Experiments}\n\\section{Conclusion}\n\n\\bibliographystyle{plainnat}\n\\bibliography{references}\n\\end{document}` },
+  { title: 'IEEE 双栏论文框架', code: `\\documentclass[conference]{IEEEtran}\n\\usepackage{amsmath, amssymb}\n\\usepackage{graphicx, booktabs, hyperref, cite}\n\n\\title{Your IEEE Paper Title}\n\\author{\\IEEEauthorblockN{Author}\\IEEEauthorblockA{University}}\n\n\\begin{document}\n\\maketitle\n\\begin{abstract} Abstract. \\end{abstract}\n\\begin{IEEEkeywords} keyword1, keyword2 \\end{IEEEkeywords}\n\\section{Introduction}\n\\section{Method}\n\\section{Experiments}\n\\section{Conclusion}\n\\bibliographystyle{IEEEtran}\n\\bibliography{references}\n\\end{document}` },
+  { title: '中文论文框架（ctexart）', code: `\\documentclass[12pt, a4paper]{ctexart}\n\\usepackage{amsmath, amssymb, graphicx, booktabs, hyperref}\n\\usepackage[margin=2.5cm]{geometry}\n\n\\title{中文论文标题}\n\\author{作者姓名\\\\单位名称}\n\\date{\\today}\n\n\\begin{document}\n\\maketitle\n\\begin{abstract} 摘要 \\end{abstract}\n\\textbf{关键词：}关键词1；关键词2\n\\section{引言}\n\\section{方法}\n\\section{实验}\n\\section{结论}\n\\bibliographystyle{plainnat}\n\\bibliography{references}\n\\end{document}` },
+];
+document.getElementById('doc-templates').innerHTML = docTemplates.map(t =>
+  `<div class="card">${collapsible(t.title, codeBlock(t.code), false)}</div>`
+).join('');
+
+const bibTemplates = [
+  { title: 'BibTeX 条目格式', code: `% 期刊\n@article{AuthorYear,\n  author  = {Last, First and Last2, First2},\n  title   = {Title},\n  journal = {Journal},\n  year    = {2024},\n  volume  = {10},\n  pages   = {100--120},\n}\n\n% 会议\n@inproceedings{AuthorYear,\n  author    = {Last, First},\n  title     = {Title},\n  booktitle = {Proceedings},\n  year      = {2024},\n  pages     = {1--10},\n}\n\n% 预印本\n@article{AuthorYear,\n  author  = {Last, First},\n  title   = {Title},\n  journal = {arXiv preprint arXiv:2401.12345},\n  year    = {2024},\n}\n\n% 书籍\n@book{AuthorYear,\n  author    = {Last, First},\n  title     = {Book Title},\n  publisher = {Publisher},\n  year      = {2024},\n}` },
+  { title: '引用命令对照', code: `% natbib:\n\\citet{ref}      % Author (Year)\n\\citep{ref}      % (Author, Year)\n\\citeauthor{ref} % Author\n\\citeyear{ref}   % Year\n\n% biblatex:\n\\textcite{ref}   % Author (Year)\n\\parencite{ref}  % (Author Year)\n\\autocite{ref}   % Auto style` },
+];
+document.getElementById('bib-templates').innerHTML = bibTemplates.map(t =>
+  `<div class="card">${collapsible(t.title, codeBlock(t.code), false)}</div>`
+).join('');
+
+const figureTemplates = [
+  { title: '单图插入', code: `\\begin{figure}[htbp]\n  \\centering\n  \\includegraphics[width=0.8\\linewidth]{figures/example.pdf}\n  \\caption{图片描述}\n  \\label{fig:example}\n\\end{figure}` },
+  { title: '双图并排（subcaption）', code: `\\begin{figure}[htbp]\n  \\centering\n  \\begin{subfigure}[b]{0.48\\linewidth}\n    \\centering\n    \\includegraphics[width=\\linewidth]{fig_a.pdf}\n    \\caption{子图 A}\n  \\end{subfigure}\n  \\hfill\n  \\begin{subfigure}[b]{0.48\\linewidth}\n    \\centering\n    \\includegraphics[width=\\linewidth]{fig_b.pdf}\n    \\caption{子图 B}\n  \\end{subfigure}\n  \\caption{总标题}\n\\end{figure}` },
+  { title: '2×2 网格图', code: `\\begin{figure}[htbp]\n  \\centering\n  \\begin{subfigure}[b]{0.48\\linewidth}\n    \\includegraphics[width=\\linewidth]{fig1.pdf}\n    \\caption{(a)}\n  \\end{subfigure}\n  \\hfill\n  \\begin{subfigure}[b]{0.48\\linewidth}\n    \\includegraphics[width=\\linewidth]{fig2.pdf}\n    \\caption{(b)}\n  \\end{subfigure}\n  \\\\[6pt]\n  \\begin{subfigure}[b]{0.48\\linewidth}\n    \\includegraphics[width=\\linewidth]{fig3.pdf}\n    \\caption{(c)}\n  \\end{subfigure}\n  \\hfill\n  \\begin{subfigure}[b]{0.48\\linewidth}\n    \\includegraphics[width=\\linewidth]{fig4.pdf}\n    \\caption{(d)}\n  \\end{subfigure}\n  \\caption{2x2 Grid}\n\\end{figure}` },
+  { title: '跨栏图（figure*）', code: `\\begin{figure*}[htbp]\n  \\centering\n  \\includegraphics[width=0.9\\textwidth]{wide_figure.pdf}\n  \\caption{跨栏图}\n\\end{figure*}` },
+];
+document.getElementById('figure-templates').innerHTML = figureTemplates.map(t =>
+  `<div class="card">${collapsible(t.title, codeBlock(t.code), false)}</div>`
+).join('');
+
+const algoTemplates = [
+  { title: '算法伪代码（algorithmic）', code: `\\begin{algorithm}[htbp]\n  \\caption{Algorithm Name}\n  \\begin{algorithmic}[1]\n    \\REQUIRE Input $X$, rate $\\eta$\n    \\ENSURE Model $\\theta$\n    \\STATE Init $\\theta$\n    \\FOR{$t = 1$ to $T$}\n      \\STATE $g \\leftarrow \\nabla_{\\theta} \\mathcal{L}$\n      \\STATE $\\theta \\leftarrow \\theta - \\eta g$\n      \\IF{converged}\n        \\STATE \\textbf{break}\n      \\ENDIF\n    \\ENDFOR\n    \\RETURN $\\theta$\n  \\end{algorithmic}\n\\end{algorithm}` },
+  { title: '代码块（listings）', code: `\\usepackage{listings}\n\\lstset{\n  basicstyle=\\ttfamily\\small,\n  keywordstyle=\\color{blue},\n  commentstyle=\\color{green!60!black},\n  numbers=left, frame=single,\n}\n\n\\begin{lstlisting}[language=Python, caption={Example}]\nimport torch\nmodel = torch.nn.Linear(768, 10)\nout = model(x)\n\\end{lstlisting}` },
+];
+document.getElementById('algo-templates').innerHTML = algoTemplates.map(t =>
+  `<div class="card">${collapsible(t.title, codeBlock(t.code), false)}</div>`
+).join('');
+
+// ===== PACKAGES =====
+const packages = [
+  ['amsmath','数学公式增强','\\usepackage{amsmath}'],
+  ['amssymb','额外数学符号','\\usepackage{amssymb}'],
+  ['amsthm','定理环境','\\usepackage{amsthm}'],
+  ['graphicx','插图','\\usepackage{graphicx}'],
+  ['booktabs','三线表','\\usepackage{booktabs}'],
+  ['multirow','多行合并','\\usepackage{multirow}'],
+  ['hyperref','超链接','\\usepackage{hyperref}'],
+  ['geometry','页面边距','\\usepackage[margin=1in]{geometry}'],
+  ['natbib','自然引用','\\usepackage{natbib}'],
+  ['biblatex','现代文献管理','\\usepackage[backend=biber]{biblatex}'],
+  ['subcaption','子图','\\usepackage{subcaption}'],
+  ['algorithm','算法浮动体','\\usepackage{algorithm}'],
+  ['algorithmic','伪代码','\\usepackage{algorithmic}'],
+  ['listings','代码排版','\\usepackage{listings}'],
+  ['xcolor','颜色','\\usepackage[table]{xcolor}'],
+  ['tikz','绘图','\\usepackage{tikz}'],
+  ['caption','标题格式','\\usepackage{caption}'],
+  ['float','浮动体 [H]','\\usepackage{float}'],
+  ['tabularx','自适应列宽','\\usepackage{tabularx}'],
+  ['longtable','跨页表格','\\usepackage{longtable}'],
+  ['threeparttable','表格脚注','\\usepackage{threeparttable}'],
+  ['microtype','微调排版','\\usepackage{microtype}'],
+  ['enumitem','列表样式','\\usepackage{enumitem}'],
+  ['cleveref','智能引用','\\usepackage{cleveref}'],
+  ['siunitx','物理单位','\\usepackage{siunitx}'],
+  ['bm','粗体符号','\\usepackage{bm}'],
+  ['mathtools','amsmath 增强','\\usepackage{mathtools}'],
+  ['ctex','中文支持','\\usepackage{ctex}'],
+];
+document.getElementById('packages-list').innerHTML = `<div class="card">
+  <div class="search-box"><span class="search-icon">🔍</span>
+    <input type="text" class="search-input" placeholder="搜索宏包..." oninput="filterPackages(this.value)">
+  </div>
+  <div id="pkg-grid">${packages.map(([n,d,c]) => `
+    <div class="shortcut-item pkg-item" style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:var(--bg-code);border-radius:var(--radius-sm);font-size:13px;margin-bottom:4px;cursor:pointer;" data-search="${n} ${d}" onclick="copyText('${c.replace(/'/g,"\\'")}')">
+      <div><strong style="color:var(--accent)">${n}</strong><div style="font-size:12px;color:var(--text-muted);margin-top:1px">${d}</div></div>
+      <span style="font-family:'JetBrains Mono';font-size:11px;color:var(--accent);white-space:nowrap">${escapeHtml(c)}</span>
+    </div>`).join('')}</div>
+</div>`;
+function filterPackages(q) {
+  document.querySelectorAll('.pkg-item').forEach(item => {
+    item.style.display = item.dataset.search.toLowerCase().includes(q.toLowerCase()) ? '' : 'none';
+  });
+}
+
+// ===== TIPS =====
+const tips = [
+  { title: '公式编号控制', content: `% 不编号\n\\begin{equation*} E = mc^2 \\end{equation*}\n\n% 部分不编号\n\\begin{align}\n  a &= b \\label{eq:1} \\\\\n  d &= e \\nonumber\n\\end{align}\n\n% 自定义标签\n\\begin{equation} a^2+b^2=c^2 \\tag{*} \\end{equation}` },
+  { title: '浮动体位置', content: `% h=here, t=top, b=bottom, p=page, H=强制here\n\\begin{figure}[htbp]   % 推荐\n\\begin{figure}[H]      % 需要 \\usepackage{float}\n\n% 全局放宽限制\n\\renewcommand{\\topfraction}{0.9}\n\\renewcommand{\\textfraction}{0.1}` },
+  { title: '间距微调', content: `% 数学间距（从小到大）:\n\\!  \\,  \\:  \\;  \\   \\quad  \\qquad\n\n% 积分 dx:\n\\int f(x) \\, \\mathrm{d}x\n\n% 垂直间距:\n\\vspace{12pt}  \\smallskip  \\medskip  \\bigskip` },
+  { title: '自定义快捷命令', content: `\\newcommand{\\R}{\\mathbb{R}}\n\\newcommand{\\norm}[1]{\\left\\|#1\\right\\|}\n\\newcommand{\\abs}[1]{\\left|#1\\right|}\n\\newcommand{\\inner}[2]{\\left\\langle #1, #2 \\right\\rangle}\n\\newcommand{\\pdv}[2]{\\frac{\\partial #1}{\\partial #2}}` },
+  { title: '编译命令', content: `pdflatex main.tex\nxelatex main.tex       # 中文推荐\nbibtex main            # 参考文献\nlatexmk -pdf main.tex  # 自动化\nlatexmk -xelatex main.tex` },
+  { title: '常见错误解决', content: `% Undefined control sequence → 缺少宏包\n% Missing $ inserted → 需要数学模式\n% Extra alignment tab & → 列数不匹配\n% Overfull hbox → 文本溢出，用 \\sloppy\n% File not found → tlmgr install xxx` },
+];
+document.getElementById('tips-list').innerHTML = tips.map(t =>
+  `<div class="card">${collapsible(t.title, codeBlock(t.content), false)}</div>`
+).join('');
+
+// ===== EXPORT =====
+function exportAll() {
+  let txt = '% LaTeX 学术论文工具箱 — 全部模板\n\n';
+  const all = [
+    ['公式', formulaTemplates],['矩阵', matrixTemplates],
+    ['表格', tableTemplates],['图片', figureTemplates],
+    ['算法', algoTemplates],['参考文献', bibTemplates],
+    ['论文框架', docTemplates],
+  ];
+  all.forEach(([name, list]) => {
+    txt += `% ===== ${name} =====\n\n`;
+    list.forEach(t => { txt += `% --- ${t.title} ---\n${t.code}\n\n`; });
+  });
+  const blob = new Blob([txt], {type:'text/plain'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'latex_templates_all.tex';
+  a.click();
+  showToast('已导出全部模板！');
+}
+
+// ===== INIT RENDERING =====
+waitForKatex().then(() => {
+  livePreviewFormula();
+
+  // render all pending katex
+  pendingRenders.forEach(item => {
+    const el = document.getElementById(item.id);
+    if (el) renderKatex(item.latex, el, item.display !== false);
+  });
+
+  // initial table preview
+  convertCSV('threeline');
+});
+</script>
+</body>
+</html>
