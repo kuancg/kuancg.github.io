@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Markdown 编辑器</title>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Noto+Serif+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-dark: #0a0a0b;
+            --bg-panel: #131316;
+            --bg-input: #1a1a1f;
+            --border: #2a2a30;
+            --text-primary: #e8e8ec;
+            --text-secondary: #8b8b96;
+            --accent: #7c6aef;
+            --accent-hover: #9182f3;
+            --accent-glow: rgba(124, 106, 239, 0.15);
+        }
+
+        body {
+            font-family: 'Noto Serif SC', serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        .app {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        /* Header */
+        header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 24px;
+            background: var(--bg-panel);
+            border-bottom: 1px solid var(--border);
+            flex-shrink: 0;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo-icon {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, var(--accent), #a78bfa);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 18px;
+            color: white;
+        }
+
+        .logo h1 {
+            font-size: 20px;
+            font-weight: 600;
+            letter-spacing: -0.5px;
+        }
+
+        .logo span {
+            color: var(--text-secondary);
+            font-size: 13px;
+            font-weight: 400;
+        }
+
+        .toolbar {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 18px;
+            border: none;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-secondary {
+            background: var(--bg-input);
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            background: var(--border);
+            border-color: var(--text-secondary);
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--accent-hover);
+            box-shadow: 0 4px 20px var(--accent-glow);
+        }
+
+        .btn svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        /* Main Content */
+        main {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .panel-header {
+            padding: 14px 20px;
+            background: var(--bg-panel);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-shrink: 0;
+        }
+
+        .panel-title {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .editor-panel {
+            border-right: 1px solid var(--border);
+        }
+
+        .editor-panel .panel-header {
+            background: linear-gradient(180deg, var(--bg-panel), var(--bg-input));
+        }
+
+        textarea {
+            flex: 1;
+            width: 100%;
+            padding: 24px;
+            background: var(--bg-input);
+            border: none;
+            color: var(--text-primary);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 14px;
+            line-height: 1.75;
+            resize: none;
+            outline: none;
+        }
+
+        textarea::placeholder {
+            color: var(--text-secondary);
+        }
+
+        .preview-panel {
+            background: var(--bg-dark);
+        }
+
+        .preview-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 32px 40px;
+            background: linear-gradient(180deg, var(--bg-dark) 0%, #0d0d0f 100%);
+        }
+
+        /* Preview Styles */
+        .preview-content h1,
+        .preview-content h2,
+        .preview-content h3,
+        .preview-content h4,
+        .preview-content h5,
+        .preview-content h6 {
+            font-weight: 600;
+            line-height: 1.3;
+            margin: 1.5em 0 0.75em;
+            color: var(--text-primary);
+        }
+
+        .preview-content h1 {
+            font-size: 2.25em;
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 0.5em;
+        }
+
+        .preview-content h2 {
+            font-size: 1.75em;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 0.4em;
+        }
+
+        .preview-content h3 { font-size: 1.4em; }
+        .preview-content h4 { font-size: 1.15em; }
+
+        .preview-content p {
+            margin: 1em 0;
+            line-height: 1.85;
+            color: var(--text-primary);
+        }
+
+        .preview-content a {
+            color: var(--accent);
+            text-decoration: none;
+            border-bottom: 1px solid transparent;
+            transition: border-color 0.2s;
+        }
+
+        .preview-content a:hover {
+            border-bottom-color: var(--accent);
+        }
+
+        .preview-content code {
+            font-family: 'JetBrains Mono', monospace;
+            background: var(--bg-input);
+            padding: 0.2em 0.5em;
+            border-radius: 4px;
+            font-size: 0.9em;
+            color: #e879f9;
+        }
+
+        .preview-content pre {
+            background: var(--bg-panel);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 20px;
+            overflow-x: auto;
+            margin: 1.5em 0;
+        }
+
+        .preview-content pre code {
+            background: none;
+            padding: 0;
+            color: var(--text-primary);
+        }
+
+        .preview-content blockquote {
+            border-left: 4px solid var(--accent);
+            padding-left: 20px;
+            margin: 1.5em 0;
+            color: var(--text-secondary);
+            font-style: italic;
+        }
+
+        .preview-content ul, .preview-content ol {
+            margin: 1em 0;
+            padding-left: 2em;
+        }
+
+        .preview-content li {
+            margin: 0.5em 0;
+            line-height: 1.75;
+        }
+
+        .preview-content table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1.5em 0;
+        }
+
+        .preview-content th, .preview-content td {
+            border: 1px solid var(--border);
+            padding: 12px 16px;
+            text-align: left;
+        }
+
+        .preview-content th {
+            background: var(--bg-panel);
+            font-weight: 600;
+        }
+
+        .preview-content img {
+            max-width: 100%;
+            border-radius: 8px;
+            margin: 1em 0;
+        }
+
+        .preview-content hr {
+            border: none;
+            border-top: 1px solid var(--border);
+            margin: 2em 0;
+        }
+
+        /* Fullscreen Mode */
+        .fullscreen-overlay {
+            position: fixed;
+            inset: 0;
+            background: var(--bg-dark);
+            z-index: 1000;
+            display: none;
+            flex-direction: column;
+        }
+
+        .fullscreen-overlay.active {
+            display: flex;
+        }
+
+        .fullscreen-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 32px;
+            background: var(--bg-panel);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .fullscreen-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .fullscreen-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 48px;
+            max-width: 900px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        /* Word count */
+        .word-count {
+            font-size: 12px;
+            color: var(--text-secondary);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* Empty State */
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: var(--text-secondary);
+            text-align: center;
+            padding: 40px;
+        }
+
+        .empty-state svg {
+            width: 64px;
+            height: 64px;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        .empty-state p {
+            font-size: 15px;
+            line-height: 1.6;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            main {
+                flex-direction: column;
+            }
+            
+            .editor-panel {
+                border-right: none;
+                border-bottom: 1px solid var(--border);
+            }
+            
+            .panel {
+                min-height: 40vh;
+            }
+            
+            header {
+                flex-direction: column;
+                gap: 16px;
+            }
+            
+            .toolbar {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+
+        /* PDF Export Styles */
+        .pdf-export-styles {
+            font-family: 'Noto Serif SC', Georgia, serif;
+            color: #1a1a1a;
+            background: white;
+            padding: 40px;
+        }
+
+        .pdf-export-styles h1 { color: #1a1a1a; border-color: #ddd; }
+        .pdf-export-styles h2 { color: #1a1a1a; border-color: #eee; }
+        .pdf-export-styles h3, .pdf-export-styles h4 { color: #1a1a1a; }
+        .pdf-export-styles p { color: #333; }
+        .pdf-export-styles code { background: #f5f5f5; color: #d63384; }
+        .pdf-export-styles pre { background: #f8f8f8; border-color: #e5e5e5; }
+        .pdf-export-styles pre code { color: #333; }
+        .pdf-export-styles blockquote { border-color: #7c6aef; color: #666; }
+        .pdf-export-styles a { color: #7c6aef; }
+        .pdf-export-styles th { background: #f5f5f5; }
+        .pdf-export-styles th, .pdf-export-styles td { border-color: #ddd; }
+    </style>
+</head>
+<body>
+    <div class="app">
+        <header>
+            <div class="logo">
+                <div class="logo-icon">M</div>
+                <div>
+                    <h1>Markdown 编辑器</h1>
+                    <span>实时预览 · 全屏浏览 · PDF导出</span>
+                </div>
+            </div>
+            <div class="toolbar">
+                <button class="btn btn-secondary" onclick="toggleFullscreen()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
+                    </svg>
+                    全屏预览
+                </button>
+                <button class="btn btn-primary" onclick="exportPDF()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                        <polyline points="7,10 12,15 17,10"/>
+                        <line x1="12" y1="15" x2="12" y2="3"/>
+                    </svg>
+                    导出 PDF
+                </button>
+            </div>
+        </header>
+
+        <main>
+            <div class="panel editor-panel">
+                <div class="panel-header">
+                    <span class="panel-title">编辑器</span>
+                    <span class="word-count" id="wordCount">0 字</span>
+                </div>
+                <textarea 
+                    id="editor" 
+                    placeholder="在这里输入 Markdown 内容...
+
+# 标题示例
+
+这是一段**粗体**和*斜体*文字。
+
+## 代码示例
+
+`行内代码` 或代码块：
+
+```javascript
+console.log('Hello, Markdown!');
+```
+
+## 列表示例
+
+- 项目一
+- 项目二
+- 项目三
+
+> 这是一段引用文字。
+
+[链接文字](https://example.com)"
+                    oninput="updatePreview()"
+                ></textarea>
+            </div>
+
+            <div class="panel preview-panel">
+                <div class="panel-header">
+                    <span class="panel-title">预览</span>
+                </div>
+                <div class="preview-content" id="preview">
+                    <div class="empty-state">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                        </svg>
+                        <p>在左侧输入 Markdown 内容<br>这里会实时显示渲染结果</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Fullscreen Overlay -->
+    <div class="fullscreen-overlay" id="fullscreenOverlay">
+        <div class="fullscreen-header">
+            <span class="fullscreen-title">全屏预览</span>
+            <button class="btn btn-secondary" onclick="toggleFullscreen()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="18" y1="6" x2="6" y2="18"/>
+                    <line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+                退出全屏
+            </button>
+        </div>
+        <div class="fullscreen-content preview-content" id="fullscreenPreview"></div>
+    </div>
+
+    <script>
+        // Configure marked
+        marked.setOptions({
+            breaks: true,
+            gfm: true
+        });
+
+        const editor = document.getElementById('editor');
+        const preview = document.getElementById('preview');
+        const fullscreenPreview = document.getElementById('fullscreenPreview');
+        const fullscreenOverlay = document.getElementById('fullscreenOverlay');
+        const wordCount = document.getElementById('wordCount');
+
+        function updatePreview() {
+            const markdown = editor.value;
+            
+            if (markdown.trim() === '') {
+                preview.innerHTML = `
+                    <div class="empty-state">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                        </svg>
+                        <p>在左侧输入 Markdown 内容<br>这里会实时显示渲染结果</p>
+                    </div>
+                `;
+                fullscreenPreview.innerHTML = preview.innerHTML;
+            } else {
+                const html = marked.parse(markdown);
+                preview.innerHTML = html;
+                fullscreenPreview.innerHTML = html;
+            }
+
+            // Update word count (Chinese character count)
+            const text = markdown.replace(/\s/g, '');
+            wordCount.textContent = `${text.length} 字`;
+        }
+
+        function toggleFullscreen() {
+            fullscreenOverlay.classList.toggle('active');
+            document.body.style.overflow = fullscreenOverlay.classList.contains('active') ? 'hidden' : '';
+        }
+
+        function exportPDF() {
+            const markdown = editor.value;
+            
+            if (markdown.trim() === '') {
+                alert('请先输入 Markdown 内容');
+                return;
+            }
+
+            // Create a temporary container for PDF export
+            const tempContainer = document.createElement('div');
+            tempContainer.className = 'preview-content pdf-export-styles';
+            tempContainer.innerHTML = marked.parse(markdown);
+            tempContainer.style.position = 'absolute';
+            tempContainer.style.left = '-9999px';
+            document.body.appendChild(tempContainer);
+
+            const opt = {
+                margin: [15, 15, 15, 15],
+                filename: 'markdown-export.pdf',
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { 
+                    scale: 2,
+                    useCORS: true,
+                    letterRendering: true
+                },
+                jsPDF: { 
+                    unit: 'mm', 
+                    format: 'a4', 
+                    orientation: 'portrait' 
+                }
+            };
+
+            html2pdf().set(opt).from(tempContainer).save().then(() => {
+                document.body.removeChild(tempContainer);
+            });
+        }
+
+        // Handle keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            // Ctrl/Cmd + Enter: Toggle fullscreen
+            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                e.preventDefault();
+                toggleFullscreen();
+            }
+            
+            // Ctrl/Cmd + S: Export PDF
+            if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+                e.preventDefault();
+                exportPDF();
+            }
+            
+            // Escape: Exit fullscreen
+            if (e.key === 'Escape' && fullscreenOverlay.classList.contains('active')) {
+                toggleFullscreen();
+            }
+        });
+
+        // Initial update
+        updatePreview();
+    </script>
+</body>
+</html>
